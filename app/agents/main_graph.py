@@ -21,9 +21,7 @@ g.add_edge("print_state", END)
 
 os.makedirs("./data/graph_checkpoints", exist_ok=True)
 db_path = os.path.join(".", "data", "graph_checkpoints", "checkpoints.sqlite")
-
-
-conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
+conn = sqlite3.connect(db_path, check_same_thread=False)
 memory = SqliteSaver(conn)
 main_graph = g.compile(checkpointer=memory)
 
