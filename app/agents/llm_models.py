@@ -60,7 +60,7 @@ elif "gpt" in DEFAULT_MODEL:
         ]
     )
     chat_model_small = ChatOpenAI(
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         api_key=OPENAI_API_KEY,
         temperature=LLM_TEMPERATURE,
     ).with_fallbacks(
