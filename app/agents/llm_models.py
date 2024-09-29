@@ -12,6 +12,12 @@ LLM_TEMPERATURE = os.getenv("LLM_TEMPERATURE")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+o1_mini = ChatOpenAI(
+    model="o1-mini",
+    api_key=OPENAI_API_KEY,
+    temperature=LLM_TEMPERATURE,
+)
+
 if "claude" in DEFAULT_MODEL:
     chat_model = ChatAnthropic(
         model=DEFAULT_MODEL,
