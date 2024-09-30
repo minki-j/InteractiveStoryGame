@@ -1,3 +1,4 @@
+import uuid
 from app.agents.main_graph import main_graph
 
 input = {
@@ -24,6 +25,6 @@ plans: become a world class AI software engineer, build an AI story generating a
 }
 
 
-config = {"configurable": {"thread_id": "2"}, "recursion_limit":100}
+config = {"configurable": {"thread_id": str(uuid.uuid4())}, "recursion_limit":100}
 
 main_graph.invoke(input, config)
