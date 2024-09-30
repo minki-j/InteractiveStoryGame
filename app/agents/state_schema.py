@@ -50,9 +50,9 @@ class EditInstruction(BaseModel):
     instruction: str
 
 
-class ChapterContent(BaseModel):
-    id: str  # Should I use SQLModel to make this foriegn key to the ChapterOutline..? 
-    chapter_content: str
+class Chapter(BaseModel):
+    id: str
+    content: str
 
 
 # ===========================================
@@ -82,6 +82,17 @@ def update_outline_unit(original_outline: Outline, new_units: Union[List[Unit], 
 
     return updated_outline
 
+def update_chapter(original_chapters: List[Chapter], new_chapters: List[Chapter]) -> List[Chapter]:
+    updated_chapters = [chapter.model_copy(deep=True) for chapter in original_chapters]
+    for new_chapter in new_chapters:
+        for idx, chapter in enumerate(updated_chapters):
+            if new_chapter.id == chapter.id:
+                updated_chapters[idx] = new_chapter
+                break
+        updated_chapters.append(new_chapter)
+
+    return updated_chapters
+
 
 # ===========================================
 #                    STATE
@@ -92,15 +103,17 @@ class InputState(BaseModel):
 
 class OutputState(BaseModel):
     outline: Annotated[Outline, update_outline_unit] = None
-    chapter_content: Optional[ChapterContent] = None
+    chapters: Annotated[List[Chapter], update_chapter] = None
 
 class OverallState(InputState, OutputState):
     # Ephemeral Variables
     # MUST be RESET after each loop
     iteration_count: int = 0
+    user_feedback: str = None
 
     # Short Term Memory
     # MAY be UPDATED after each loop
+    current_chapter_num: int = 0
 
     # Long Term Memory
     messages: Annotated[list[AnyMessage], add_messages]

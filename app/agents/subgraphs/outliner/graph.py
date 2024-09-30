@@ -1,38 +1,85 @@
 import os
 import uuid
-import operator
+from dotenv import load_dotenv
 from varname import nameof as n
-from typing import List, Dict, Any, Type, Annotated
+from typing import List
+from enum import Enum
+
 from pydantic import BaseModel, Field, create_model
 
 from langgraph.types import Send
 from langgraph.graph import START, END, StateGraph
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableLambda
 
 from app.agents.state_schema import (
     OverallState,
-    OutputState,
     Outline,
+    Unit,
     Character,
     Plot,
-    Unit,
     BackgroundSetting,
 )
 from app.agents.llm_models import chat_model, chat_model_small
 
-from dotenv import load_dotenv
 
 load_dotenv()
+SKIP_LLM_CALLS = os.getenv("SKIP_LLM_CALLS", "False").lower() == "true"
+VERIFICATION_ITERATION_MAX = int(os.getenv("VERIFICATION_ITERATION_MAX"))
 
-USE_CACHE = os.getenv("USE_CACHE", "False").lower() == "true"
-VERIFICATION_ITERATION_COUNT = int(os.getenv("VERIFICATION_ITERATION_COUNT"))
+
+def router(state: OverallState) -> OverallState:
+    print(f"\n>>> EDGE: router")
+    print("state.outline: ", state.outline)
+    if state.outline is None:
+        print("===> generate_outline")
+        return n(generate_outline)
+    else:
+        print("===> choose_units_to_edit")
+        return n(choose_units_to_edit)
+
+
+def choose_units_to_edit(state: OverallState) -> OverallState:
+    print("\n>>> EDGE: choose_units_to_edit")
+
+    class FeedbackType(Enum):
+        PLOTS = "The user wants to edit the plot of the story"
+        CHARACTERS = "The user wants to edit the character of the story"
+        BACKGROUND_SETTINGS = "The user wants to edit the background of the story"
+        OTHER = "The user wants to edit something else"
+
+    class ClassificationResult(BaseModel):
+        rationale: str
+        feedback_types: List[FeedbackType]
+
+    chain = ChatPromptTemplate.from_template(
+        "Decide which type of feedback the user gave.\n\n---\n\n**Feedback**: {feedback}\n\n---\n\n**Important Conditions that you must follow**\n\n1. If there is no feedback type that matches, choose OTHER. 2. Remember that you can choose multiple feedback types."
+    ) | chat_model_small.with_structured_output(ClassificationResult)
+
+    classification_result = chain.invoke(
+        {"feedback": state.user_feedback},
+    )
+
+    feedback_types = [type.name for type in classification_result.feedback_types]
+
+    return [
+        Send(
+            n(verify_and_edit_unit),
+            PrivateUnitState(
+                unit=unit,
+                reference=state.user_profile
+                + state.story_instruction,  # TODO: change this to a more sophisticated retrieval system
+            ),
+        )
+        for field in state.outline.__annotations__
+        for unit in getattr(state.outline, field)
+        if field.upper() in feedback_types
+    ]
 
 
 def generate_outline(state: OverallState) -> OverallState:
     print("\n>>> NODE: generate_outline")
-    if USE_CACHE:
+    if SKIP_LLM_CALLS:
         return {
             "outline": Outline(
                 characters=[
@@ -156,14 +203,15 @@ def generate_outline(state: OverallState) -> OverallState:
     return {"outline": outline}
 
 
+def increment_iteration_count(state: OverallState) -> OverallState:
+    print(f"\n>>> NODE: increment_iteration_count to {state.iteration_count + 1}")
+    return {"iteration_count": state.iteration_count + 1}
+
+
 class PrivateUnitState(BaseModel):
     unit: Unit
     reference: str
 
-
-def increment_iteration_count(state: OverallState) -> OverallState:
-    print(f"\n>>> NODE: increment_iteration_count to {state.iteration_count + 1}")
-    return {"iteration_count": state.iteration_count + 1}
 
 def verify_and_edit_unit_in_parallel(state: OverallState) -> List[Send]:
     print("\n>>> EDGE: verify_and_edit_unit_in_parallel")
@@ -182,11 +230,14 @@ def verify_and_edit_unit_in_parallel(state: OverallState) -> List[Send]:
 
 def verify_and_edit_unit(state: PrivateUnitState) -> OverallState:
     """
-    I combined the verification and editing processes into a single LLM call because editing always requires the same information used for verification.
+    Combined the verification and editing processes into a single LLM call because editing always requires the same information used for verification.
     For instance, if I first verify whether a unit is correct in one LLM call and then pass the incorrect units for editing in a separate call, I would still need to provide the reference unit and the original (incorrect) unit during the editing step.
     Grouping both tasks streamlines the process, reduce redundancy, and ensure that all necessary information is available at once for both verification and correction.
     """
     print(f">>> NODE: verify_and_edit_unit")
+
+    if SKIP_LLM_CALLS:
+        return {"outline": []}
 
     # convert the unit to a string to use it in the prompt
     if not isinstance(state.unit, str):
@@ -231,20 +282,24 @@ def verify_and_edit_unit(state: PrivateUnitState) -> OverallState:
     edited_unit.id = state.unit.id
     return {"outline": [edited_unit]}
 
+
 def iterate_verify_and_edit_unit_until_max_count(state: OverallState):
     print(f"\n>>> EDGE: iterate_verify_and_edit_unit_until_max_count")
-    if state.iteration_count >= VERIFICATION_ITERATION_COUNT:
-        return END
+    if state.iteration_count >= VERIFICATION_ITERATION_MAX:
+        return "reset_ephemeral_variables"
     else:
         return n(increment_iteration_count)
 
 
-class PrivateEditUnitState(BaseModel):
-    edited_unit: Annotated[List[Unit], operator.add]
-
-
 g = StateGraph(OverallState)
-g.add_edge(START, n(generate_outline))
+g.add_conditional_edges(
+    START, router, path_map=[n(choose_units_to_edit), n(generate_outline)]
+)
+
+g.add_node(n(choose_units_to_edit), RunnablePassthrough())
+g.add_conditional_edges(
+    n(choose_units_to_edit), choose_units_to_edit, path_map=[n(verify_and_edit_unit)]
+)
 
 g.add_node(generate_outline)
 g.add_edge(n(generate_outline), n(increment_iteration_count))
@@ -265,9 +320,12 @@ g.add_conditional_edges(
     iterate_verify_and_edit_unit_until_max_count,
     path_map=[
         n(increment_iteration_count),
-        END,
+        "reset_ephemeral_variables",
     ],
 )
+
+g.add_node("reset_ephemeral_variables", lambda _: {"iteration_count": 0})
+g.add_edge("reset_ephemeral_variables", END)
 
 outliner_graph = g.compile()
 

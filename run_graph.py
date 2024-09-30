@@ -1,7 +1,7 @@
 import uuid
 from app.agents.main_graph import main_graph
 
-input = {
+input_data = {
     "story_instruction": "A realistic journey of Minki building his startup called Perfect Day. The story should have a strong plot with interesting characters and a clear goal for the main character. It should be gripping and interesting to read. Don't be too cheesy or too serious.",
     "user_profile": """
 name: Minki Jung.
@@ -24,7 +24,22 @@ plans: become a world class AI software engineer, build an AI story generating a
     """
 }
 
-
 config = {"configurable": {"thread_id": str(uuid.uuid4())}, "recursion_limit":100}
 
-main_graph.invoke(input, config)
+output = main_graph.invoke(input_data, config)
+
+print(f"==>> output: {output["chapters"]}")
+
+while True:
+    user_feedback = input("Enter a feedback:")
+    user_feedback="I want "
+    main_graph.update_state(
+        config,
+        {
+            "user_feedback": user_feedback,
+        },
+        as_node="get_feedback_from_user",
+    )
+    output = main_graph.invoke(None, config)
+    print(f"==>> output: {output["chapters"]}")
+
