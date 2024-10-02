@@ -110,6 +110,7 @@ class OverallState(InputState, OutputState):
     # MUST be RESET after each loop
     iteration_count: int = 0
     user_feedback: str = None
+    fields_to_edit: List[str] = None
 
     # Short Term Memory
     # MAY be UPDATED after each loop
