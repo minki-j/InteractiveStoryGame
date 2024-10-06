@@ -44,6 +44,9 @@ class Outline(BaseModel):
     background_settings: List[BackgroundSetting] = Field(
         description="The background setting of the story."
     )
+    genre: str = Field(
+        description="The genre of the story."
+    )
 
 class EditInstruction(BaseModel):
     unit: Unit
@@ -109,12 +112,12 @@ class OverallState(InputState, OutputState):
     # Ephemeral Variables
     # MUST be RESET after each loop
     iteration_count: int = 0
-    user_feedback: str = None
-    fields_to_edit: List[str] = None
+    user_feedback: str = ""
+    fields_to_edit: List[str] = []
 
     # Short Term Memory
     # MAY be UPDATED after each loop
-    current_chapter_num: int = 0
+    current_chapter_num: int = 1
 
     # Long Term Memory
     messages: Annotated[list[AnyMessage], add_messages]

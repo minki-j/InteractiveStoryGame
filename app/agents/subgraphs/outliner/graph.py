@@ -30,35 +30,37 @@ VERIFICATION_ITERATION_MAX = int(os.getenv("VERIFICATION_ITERATION_MAX"))
 
 def router(state: OverallState) -> OverallState:
     print(f"\n>>> EDGE: router")
-    print("state.outline: ", state.outline)
     if state.outline is None:
-        print("===> generate_outline")
         return n(generate_initial_outline)
     else:
-        print("===> choose_units_to_edit")
         return n(choose_units_to_edit)
 
 
 def choose_units_to_edit(state: OverallState) -> OverallState:
     print("\n>>> EDGE: choose_units_to_edit")
 
-    #TODO: Didn't work well for feedback for the details of the PefectDay app.
+    # TODO: Didn't work well for feedback for the details of the PefectDay app.
     class FeedbackType(Enum):
         PLOTS = "The user wants to edit the plot of the story"
         CHARACTERS = "The user wants to edit the character of the story"
         BACKGROUND_SETTINGS = "The user wants to edit the background of the story"
-        OTHER = "The user wants to edit something else"
+        # OTHER = "The user wants to edit something else"
 
     class ClassificationResult(BaseModel):
         rationale: str
         feedback_types: List[FeedbackType]
 
     chain = ChatPromptTemplate.from_template(
-        "Decide which type of feedback the user gave.\n\n---\n\n**Feedback**: {feedback}\n\n---\n\n**Important Conditions that you must follow**\n\n1. If there is no feedback type that matches, choose OTHER. 2. Remember that you can choose multiple feedback types."
+        "**Context**: The user read a chapter of a story and gave feedback on it. Here is the information about the story:\n {outline}\n\n---\n\n**Feedback**: {feedback}\n\n---\n\n**Instructions**: Now we have to amend the story which is divided into several types of components. Your task is to decide which type of component the user feedback is about to.\n\n**Important Conditions that you must follow**\n\n1.Remember that you can choose multiple feedback types."
     ) | chat_model_small.with_structured_output(ClassificationResult)
 
     classification_result = chain.invoke(
-        {"feedback": state.user_feedback},
+        {
+            "outline": state.outline.model_dump_json(indent=1, exclude={"id"}).replace(
+                r'["{}\s]', ""
+            ),
+            "feedback": state.user_feedback,
+        },
     )
 
     feedback_types = [type.name for type in classification_result.feedback_types]
@@ -147,7 +149,7 @@ def generate_initial_outline(state: OverallState) -> OverallState:
         )
         return {
             "outline": outline,
-            "fields_to_edit": list(outline.__annotations__.keys()),
+            "fields_to_edit": [key.upper() for key in outline.__annotations__.keys()],
         }
 
     prompt = ChatPromptTemplate.from_messages(
@@ -193,7 +195,7 @@ def generate_initial_outline(state: OverallState) -> OverallState:
 
     return {
         "outline": outline,
-        "fields_to_edit": list(state.outline.__annotations__.keys()),
+        "fields_to_edit": [key.upper() for key in outline.__annotations__.keys()],
     }
 
 
@@ -203,19 +205,22 @@ def increment_iteration_count(state: OverallState) -> OverallState:
 
 
 class PrivateUnitState(BaseModel):
-    unit: Unit
-    reference: str
+    unit: Unit = None
+    reference: str = ""
+    user_feedback: str = ""
 
 
 def send_units_to_verify_edit_loop_in_parallel(state: OverallState) -> List[Send]:
     print("\n>>> EDGE: send_units_to_verify_edit_loop_in_parallel")
-    units_to_edit = [
-        unit
-        for field in state.outline.__annotations__
-        for unit in getattr(state.outline, field)
-        if field.upper() in state.fields_to_edit
-    ]
+    units_to_edit = []
+    for field in state.outline.__annotations__:
+        units = getattr(state.outline, field)
+        for unit in units:
+            if field.upper() in state.fields_to_edit:
+                units_to_edit.append(unit)
+
     if len(units_to_edit) == 0:
+        print("No units to edit, breaking the loop")
         return "reset_ephemeral_variables"
 
     return [
@@ -224,6 +229,7 @@ def send_units_to_verify_edit_loop_in_parallel(state: OverallState) -> List[Send
             PrivateUnitState(
                 unit=unit,
                 reference=state.user_profile + state.story_instruction,
+                user_feedback=state.user_feedback,
             ),
         )
         for unit in units_to_edit
@@ -268,13 +274,24 @@ def verify_and_edit_unit(state: PrivateUnitState) -> OverallState:
         ),
     }
     ExamineResult = create_model("ExamineResult", **class_fields)
+    if state.user_feedback != "":
+        template = "The user gave a feedback to change the following uint of the story. First, check if the unit is correctly described as the feedback suggests. If it is, response edit_instuction and edited_unit with empty string. If it is not, explain what to edit in edit_instuction and generate the edited_unit accordingly. \n\n---\n\n**Unit**: {unit}\n\n**Reference**: {reference}\n\n---\n\n**Feedback from the user**: {feedback}\n\n---\n\n**Important Conditions that you must follow**\n\n1. Only change the unit based on the feedback.\n2. Do not make up things that is not in the plot and information."
+    else:
+        template = "Check if the following unit of the outline corresponds to the reference\n\n---\n\n**Unit**: {unit}\n\n**Reference**: {reference}\n\n---\n\n**Feedback from the user**: {feedback}\n\n---\n\n**Important Conditions that you must follow**\n\n1. If the unit is correct, leave all other fields with an empty string.\n2. When editing, you must leave the id of the unit to an empty string."
 
     chain = ChatPromptTemplate.from_template(
-        "Check if the following unit of the outline corresponds to the reference\n\n---\n\n**Reference**: {reference}\n\n**Unit**: {unit}\n\n---\n\n**Important Conditions that you must follow**\n\n1. If the unit is correct, response edit_instuction and edited_unit with empty string.\n2. When editing, you must leave the id of the unit to an empty string."
+        template
     ) | chat_model_small.with_structured_output(ExamineResult)
-
     verification_result = chain.invoke(
-        {"unit": string_unit, "reference": state.reference},
+        {
+            "unit": string_unit,
+            "reference": state.reference,
+            "feedback": (
+                state.user_feedback
+                if state.user_feedback != ""
+                else "No feedback from the user"
+            ),
+        },
     )  # TODO: the reference should be curated by a retrieval system.
 
     if verification_result.is_correct:
@@ -285,8 +302,8 @@ def verify_and_edit_unit(state: PrivateUnitState) -> OverallState:
     return {"outline": [edited_unit]}
 
 
-def iterate_verify_and_edit_unit_until_max_count(state: OverallState):
-    print(f"\n>>> EDGE: iterate_verify_and_edit_unit_until_max_count")
+def check_max_iteration_reached(state: OverallState):
+    print(f"\n>>> EDGE: check_max_iteration_reached")
     if state.iteration_count + 1 >= VERIFICATION_ITERATION_MAX:
         return "reset_ephemeral_variables"
     else:
@@ -313,10 +330,14 @@ g.add_conditional_edges(
     path_map=[n(verify_and_edit_unit), "reset_ephemeral_variables"],
 )
 
+
 g.add_node(verify_and_edit_unit)
+g.add_edge(n(verify_and_edit_unit), n(check_max_iteration_reached))
+
+g.add_node(n(check_max_iteration_reached), RunnablePassthrough())
 g.add_conditional_edges(
-    n(verify_and_edit_unit),
-    iterate_verify_and_edit_unit_until_max_count,
+    n(check_max_iteration_reached),
+    check_max_iteration_reached,
     path_map=[n(increment_iteration_count), "reset_ephemeral_variables"],
 )
 
@@ -324,8 +345,8 @@ g.add_node(
     "reset_ephemeral_variables",
     lambda _: {
         "iteration_count": 0,
-        "fields_to_edit": None,
-        "user_feedback": None,
+        "fields_to_edit": [],
+        "user_feedback": "",
     },
 )
 g.add_edge("reset_ephemeral_variables", END)
