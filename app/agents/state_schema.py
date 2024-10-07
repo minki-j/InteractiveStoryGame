@@ -15,7 +15,7 @@ class Choice(BaseModel):
 
 class Scene(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
+    # title: str
     content: str
     choices: List[Choice]
 
@@ -31,7 +31,7 @@ def update_story(original: List[Scene], new: List[Scene]):
     for scene in new:
         for original_scene in original:
             if scene.id == original_scene.id:
-                original_scene.title = scene.title
+                # original_scene.title = scene.title
                 original_scene.content = scene.content
                 original_scene.choices = scene.choices
                 break
@@ -49,6 +49,7 @@ class InputState(BaseModel):
 class OutputState(BaseModel):
     prologue: str = Field(default="")
     current_scene_index: int = Field(default=0)
+
     story: Annotated[List[Scene], update_story] = Field(default_factory=lambda: [])
 
 class OverallState(InputState, OutputState):
@@ -56,6 +57,8 @@ class OverallState(InputState, OutputState):
     # MUST be RESET after each loop
     iteration_count: int = 0
     user_feedback: str = ""
+    is_prologue_completed: bool = False
+    user_decision: int = None
 
     # Short Term Memory
     # MAY be UPDATED after each loop
