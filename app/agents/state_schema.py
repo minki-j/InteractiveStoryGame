@@ -1,7 +1,5 @@
-import operator
-from typing import Annotated, TypedDict, List, Dict, Optional, Union
-from collections import OrderedDict  # Add this import
 import uuid
+from typing import Annotated, List
 from pydantic import BaseModel, Field
 from langgraph.graph.message import AnyMessage, add_messages
 
@@ -9,115 +7,58 @@ from langgraph.graph.message import AnyMessage, add_messages
 # ===========================================
 #                VARIABLE SCHEMA
 # ===========================================
-class Unit(BaseModel):
-    """
-    A unit is a smallest atomic component of the outline that is what agents process independently.
-    """
-    id: str 
 
-
-class Character(Unit):
-    name: str
-    relationship_to_main_character: str
-    description: str
-
-
-class Plot(Unit):
-    title: str
-    description: str = Field(
-        description="A detailed synopsis of the chapter in about 500 words. It should have enough detail to be used for story generation."
-    )
-
-
-class BackgroundSetting(Unit):
-    title: str
+class Choice(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    chosen: bool = False
     content: str
 
-
-class Outline(BaseModel):
-    characters: List[Character] = Field(
-        description="The characters in the story. Each character has a name and a description."
-    )
-    plots: List[Plot] = Field(
-        description="The top-level outline of the story. Each chapter has a title and a description, which should be as detailed as possible."
-    )
-    background_settings: List[BackgroundSetting] = Field(
-        description="The background setting of the story."
-    )
-    genre: str = Field(
-        description="The genre of the story."
-    )
-
-class EditInstruction(BaseModel):
-    unit: Unit
-    instruction: str
-
-
-class Chapter(BaseModel):
-    id: str
+class Scene(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
     content: str
+    choices: List[Choice]
 
 
 # ===========================================
 #                REDUCER FUNCTIONS
 # ===========================================
-def update_outline_unit(original_outline: Outline, new_units: Union[List[Unit], Outline]) -> Outline:
-    updated_outline = original_outline.model_copy(deep=True)
-    if isinstance(new_units, Outline):
-        updated_outline = new_units
-    # Update the appropriate list based on the type of new_unit
-    for new_unit in new_units:
-        if isinstance(new_unit, Character):
-            updated_outline.characters = [
-                new_unit if unit.id == new_unit.id else unit
-                for unit in updated_outline.characters
-            ]
-        elif isinstance(new_unit, Plot):
-            updated_outline.plots = [
-                new_unit if unit.id == new_unit.id else unit
-                for unit in updated_outline.plots
-            ]
-        elif isinstance(new_unit, BackgroundSetting):
-            updated_outline.background_settings = [
-                new_unit if unit.id == new_unit.id else unit
-                for unit in updated_outline.background_settings
-            ]
 
-    return updated_outline
-
-def update_chapter(original_chapters: List[Chapter], new_chapters: List[Chapter]) -> List[Chapter]:
-    updated_chapters = [chapter.model_copy(deep=True) for chapter in original_chapters]
-    for new_chapter in new_chapters:
-        for idx, chapter in enumerate(updated_chapters):
-            if new_chapter.id == chapter.id:
-                updated_chapters[idx] = new_chapter
+def update_story(original: List[Scene], new: List[Scene]):
+    if len(original) == 0:
+        return new
+    
+    for scene in new:
+        for original_scene in original:
+            if scene.id == original_scene.id:
+                original_scene.title = scene.title
+                original_scene.content = scene.content
+                original_scene.choices = scene.choices
                 break
-        updated_chapters.append(new_chapter)
 
-    return updated_chapters
-
+    return original
 
 # ===========================================
 #                    STATE
 # ===========================================
 class InputState(BaseModel):
-    user_profile: str
-    story_instruction: str
+    profile: str
+    big5: str
+    genre: str
 
 class OutputState(BaseModel):
-    outline: Annotated[Outline, update_outline_unit] = None
-    chapters: Annotated[List[Chapter], update_chapter] = None
+    prologue: str = Field(default="")
+    current_scene_index: int = Field(default=0)
+    story: Annotated[List[Scene], update_story] = Field(default_factory=lambda: [])
 
 class OverallState(InputState, OutputState):
     # Ephemeral Variables
     # MUST be RESET after each loop
     iteration_count: int = 0
     user_feedback: str = ""
-    fields_to_edit: List[str] = []
 
     # Short Term Memory
     # MAY be UPDATED after each loop
-    current_chapter_num: int = 1
 
     # Long Term Memory
     messages: Annotated[list[AnyMessage], add_messages]
