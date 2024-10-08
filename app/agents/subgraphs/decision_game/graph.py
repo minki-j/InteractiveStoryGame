@@ -20,10 +20,14 @@ from langchain_core.runnables import RunnableParallel
 
 from app.agents.state_schema import Scene, Choice
 
+class InteractiveSceneChoice(BaseModel):
+    title: str = Field(description="A short sentence describing the choice")
+    detail: str = Field(description="The detail of the choice")
 
 class InteractiveScene(BaseModel):
-    scene: str = Field(description="The interactive scene")
-    choices: List[str] = Field(description="The choices that the reader can make")
+    sketchpad: str = Field(description="You can use this for chain of thought reasoning or planning")
+    amended_scene: str = Field(description="The interactive scene that ends with a decision point")
+    choices: List[InteractiveSceneChoice] = Field(description="Five possible choices for the decision point of the interactive scene")
 
 
 class DecisionGameState(BaseModel):
@@ -86,7 +90,7 @@ Let your creativity flow as you bring this character to life and conclude their 
             "genre": state.genre,
             "prologue": state.prologue,
             "stories": (
-                "\n\n" + "\n\n".join([scene.content for scene in state.story])
+                "\n\n" + "\n\n".join([scene.completed_scene for scene in state.story])
                 if len(state.story) > 0
                 else ""
             ),
@@ -113,13 +117,22 @@ def pick_the_best_draft(state: DecisionGameState) -> DecisionGameState:
 
 def add_a_decision_point(state: DecisionGameState) -> DecisionGameState:
     print("\n>>> NODE: add_a_decision_point")
-    normal_scene_example = """Emily sat at the table with her friends, but something felt off. As the laughter and conversation swirled around her, she noticed that Julia had been unusually quiet all evening. Emily caught her glancing at her phone a few times, a worried expression on her face. It wasn’t like Julia to withdraw like this, especially at gatherings. Emily wanted to ask her what was wrong, but she wasn't sure if it was the right moment."""
+    normal_scene_example = """
+    Emily sat at the table with her friends, but something felt off. As the laughter and conversation swirled around her, she noticed that Julia had been unusually quiet all evening. Emily caught her glancing at her phone a few times, a worried expression on her face. It wasn’t like Julia to withdraw like this, especially at gatherings. Emily wanted to ask her what was wrong, but she wasn't sure if it was the right moment. Nevertheless, Emily decided to ask Julia. Emily leaned in closer, lowering her voice just enough to cut through the lively chatter around the table. "Hey, is everything okay? You seem a bit off tonight. Julia blinked, startled as if pulled out of a different world. She hesitated for a moment, then looked down at her phone again, biting her lip. "I... I don’t know," she began, her voice barely above a whisper. "I didn’t want to make a big deal out of it, but... I just got some weird texts from a number I don’t recognize. It’s been happening all week." Emily’s heart sank, sensing the unease in her friend. "Weird, like... threatening? Or just random?"
+    """
 
     interactive_scene_example = """
-Scence: "Emily sat at the table with her friends, but something felt off. As the laughter and conversation swirled around her, she noticed that Julia had been unusually quiet all evening. Emily caught her glancing at her phone a few times, a worried expression on her face. It wasn’t like Julia to withdraw like this, especially at gatherings. What should Emily do?"
+sketchpad: "Ok. Let's first understand the normal scene. Emily is sitting at a table with her friends, and she notices that Julia has been unusually quiet all evening, making Emily worry about her. Emily contemplates whether she should ask Julia if everything is okay. But she asked and heard that Julia has been getting weird texts from a number she doesn't recognize.\nWhere can the decision point be? The pivotal point of this scene is when Emily decided to check in Julia. OK, this is the best decision point.\nI need to cut the story right after the sentence -- Emily wanted to ask her what was wrong, but she wasn't sure if it was the right moment.\nLet's check if this amendment makes sense. Yes, I think it does; When the reader reads this scene that is cut off there they could understand the context and choose one of the choices.\nOK, last but not least, I need to generate five possible choices for the decision point. I can include the one in the normal scene example as one of the choices. Emily could've texted instead of asking her directly. I can include that as one of the choices. Hmm what else? Emily could've asked another friend to check in on Julia. She could've just tried to bring up a lighthearted topic to ease the mood. OK. Did I get five choices? Yes, I think I'm good to go."
 
-Choices: ["Ask Julia directly if something is wrong.\nYou lean in closer to Julia and ask her softly, "Hey, is everything okay? You seem a bit off tonight.", "Text Julia privately to check in.\nNot wanting to put her on the spot, you send her a quick text: "Hey, you seem a little off tonight. Everything okay?", "Observe quietly and do nothing for now.\nYou decide not to say anything for the moment, choosing instead to watch Julia from a distance. Perhaps she’s just having an off day."]
-"""
+amended_scene: "Emily sat at the table with her friends, but something felt off. As the laughter and conversation swirled around her, she noticed that Julia had been unusually quiet all evening. Emily caught her glancing at her phone a few times, a worried expression on her face. It wasn’t like Julia to withdraw like this, especially at gatherings."
+
+choices: [
+    ("Ask Julia directly if something is wrong.", "You lean in closer to Julia and ask her softly, 'Hey, is everything okay? You seem a bit off tonight.'"),
+    ("Text Julia privately to check in.", "Not wanting to put her on the spot, you send her a quick text: 'Hey, you seem a little off tonight. Everything okay?'"),
+    ("Observe quietly and do nothing for now.", "You decide not to say anything for the moment, choosing instead to watch Julia from a distance. Perhaps she’s just having an off day."),
+    ("Casually bring up a lighthearted topic to ease the mood.", "You steer the conversation toward something fun or amusing, hoping it might lift Julia's spirits without directly confronting her."),
+    ("Ask another friend to check in on Julia.", "You discreetly mention to one of your other friends that Julia seems off and suggest they might ask her what's going on, thinking she might feel more comfortable opening up to them.")
+    ]"""
 
     chain = (
         (
@@ -128,20 +141,24 @@ Choices: ["Ask Julia directly if something is wrong.\nYou lean in closer to Juli
                     (
                         "system",
                         """
-You are a seasoned Interactive Fiction writer. Interactive Fiction is a story format where the reader can make choices on how to react or behave at crucial moments. Your task is to help the user convert parts of a plain story into an interactive fiction scene. For example, if the user provides you with a normal scene like this:
+You are a seasoned Interactive Fiction writer. Interactive Fiction is a story format where the reader can make choices on how to react or behave at crucial moments. 
+Your task is to help the user convert parts of a plain story into an interactive fiction scene. 
 
+For example, let's say the user provides you with the following normal scene:
 {normal_scene_example}
 
-You should transform it into an interactive fiction scene like this:
-
+Then you should return something like this:
 {interactive_scene_example}
 
-Where multiple choices are provided and the reader can choose one of them.
-                    """,
+Follow the following instructions to convert the scene into an interactive scene:
+1. Identify a decision point in the scene. This can be either a reaction or a behavior. If there are multiple decision points, choose the most important one. If there is no decision point, you could create one.
+2. Amend the scene so that it ends with a decision point and the reader can make a choice.
+3. Generate five possible choices for the character.
+""",
                     ),
                     (
                         "human",
-                        "Convert this scence into an interactive scene.\n\n{scene}",
+                        "Convert this normal scence into an interactive scene.\n\n{scene}",
                     ),
                 ]
             )
@@ -210,16 +227,16 @@ Let your creativity flow as you bring this character to life and conclude their 
             "profile": state.profile,
             "big5": state.big5,
             "genre": state.genre,
-            "interactive_scene": state.interactive_scene.scene,
+            "interactive_scene": state.interactive_scene.amended_scene,
             "user_choice": state.interactive_scene.choices[state.user_choice],
         }
     )
     print(f"==>> completed_scene")
     story = Scene(
-        question=state.interactive_scene.scene,
+        question=state.interactive_scene.amended_scene,
         choices=[
-            Choice(content=choice, chosen=(index == state.user_choice))
-            for index,choice in enumerate(state.interactive_scene.choices)
+            Choice(title=choice.title, detail=choice.detail, chosen=(index == state.user_choice))
+            for index, choice in enumerate(state.interactive_scene.choices)
         ],
         completed_scene=completed_scene,
     )
@@ -228,7 +245,7 @@ Let your creativity flow as you bring this character to life and conclude their 
     return {"story": [story]}
 
 
-g = StateGraph(DecisionGameState)
+g = StateGraph(OverallState)
 g.add_edge(START, n(generate_multiple_draft))
 
 g.add_node(generate_multiple_draft)
