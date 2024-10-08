@@ -129,7 +129,14 @@ g.add_node("get_feedback_from_user", RunnablePassthrough())
 g.add_edge("get_feedback_from_user", "is_prologue_done")
 
 g.add_node(n(decision_game_graph), decision_game_graph)
-g.add_edge(n(decision_game_graph), END)
+g.add_edge(n(decision_game_graph), "check_if_story_completed")
+
+g.add_node("check_if_story_completed", RunnablePassthrough())
+g.add_conditional_edges(
+    "check_if_story_completed",
+    lambda state: END if state.is_story_completed else n(decision_game_graph),
+    [END, n(decision_game_graph)]
+)
 
 os.makedirs("./data/graph_checkpoints", exist_ok=True)
 db_path = os.path.join(".", "data", "graph_checkpoints", "checkpoints.sqlite")
