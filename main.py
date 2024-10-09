@@ -102,7 +102,7 @@ app, _ = fast_app(
     font-size: 24px;
     cursor: pointer;
     border: none;
-}
+}pipp
     """
         ),
     ),
@@ -122,8 +122,11 @@ setup_toasts(app)
 from app.views import home as home_views
 from app.views import story as story_views
 from app.controllers import plot as plot_controller
+from app.controllers import init as init_controller
 
 app.get("/")(home_views.home_view)
+
+app.post("/init")(init_controller.initialize_story)
 
 app.post("/story")(plot_controller.generate_plot)
 app.get("/story")(story_views.story_view)

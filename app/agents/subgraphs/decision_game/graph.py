@@ -53,6 +53,10 @@ def generate_multiple_draft(state: OverallState) -> DecisionGameState:
 You are a celebrated {genre} fantasy fiction writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
 ---
 
+**Reader's level**: {level}
+
+---
+
 **Reader Profile**: {profile}
 
 ---
@@ -89,6 +93,7 @@ Let your creativity flow as you bring this character to life and conclude their 
             "big5": state.big5,
             "genre": state.genre,
             "prologue": state.prologue,
+            "level": state.level,
             "stories": (
                 "\n\n" + "\n\n".join([scene.completed_scene for scene in state.story])
                 if len(state.story) > 0
@@ -207,14 +212,13 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 3. **Genre**: The story should be a {genre} story.
 
-
 ---
 
 Let your creativity flow as you bring this character to life and conclude their journey in a way that is both satisfying and thought-provoking!""",
                 ),
                 (
                     "human",
-                    "Complete the story based on the choices the reader made.\n\n{interactive_scene}\n\n{user_choice}",
+                    "Complete the story based on the choices the reader made.\n\nScene: {interactive_scene}\n\nChoice the reader made: {user_choice}\n\n---\n\nDon't generate the whole story. Keep the generation 300 words or less.",
                 ),
             ]
         )

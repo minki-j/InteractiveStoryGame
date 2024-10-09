@@ -7,7 +7,7 @@ from questionnaire import BIG5, PROFILE
 
 
 thread_id = str(uuid.uuid4())
-config = {"configurable": {"thread_id": 23}, "recursion_limit":100}
+config = {"configurable": {"thread_id": 24}, "recursion_limit":100}
 
 if not main_graph.get_state(config).values:
     output = main_graph.invoke(

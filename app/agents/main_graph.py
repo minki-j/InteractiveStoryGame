@@ -19,6 +19,7 @@ from langchain_core.messages import HumanMessage, RemoveMessage
 
 from app.agents.subgraphs.decision_game.graph import decision_game_graph
 
+
 def generate_or_edit_prologue(state: OverallState):
     print("\n>>> NODE: generate_or_edit_prologue")
 
@@ -28,6 +29,10 @@ def generate_or_edit_prologue(state: OverallState):
         prompt_for_new_prologue = ChatPromptTemplate.from_template(
             """
 You are a celebrated {genre} fantasy fiction writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a fantasy story that is 300 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
+---
+
+**Reader's level**: {level}
+
 
 ---
 
@@ -57,6 +62,7 @@ Let your creativity flow as you bring this character to life and conclude their 
                 "genre": state.genre,
                 "profile": state.profile,
                 "big5": state.big5,
+                "level": state.level,
             },
         )
     else:
@@ -71,7 +77,7 @@ Let your creativity flow as you bring this character to life and conclude their 
             )
             delete_messages.extend(
                 [RemoveMessage(id=m.id) for m in state.messages[1:-1]]
-            ) # Keep the first(system message) and last message(the last generated prologue)
+            )  # Keep the first(system message) and last message(the last generated prologue)
 
         previous_messages = (
             [state.messages[0], summary_message, state.messages[-1]]
@@ -107,26 +113,32 @@ I've enjoyed the story, but have some feedback on the prologue. Please edit the 
     return {
         "prologue": parser.invoke(response),
         "messages": delete_messages + prompt.to_messages() + [response],
-    }  # prompt.to_messages() contains the first and last messages that are not deleted but it doesn't matter because LangGraph will match the ids and ignore them. 
+    }  # prompt.to_messages() contains the first and last messages that are not deleted but it doesn't matter because LangGraph will match the ids and ignore them.
 
 
-def router(state: OverallState):
+def check_if_prologue_completed(state: OverallState):
+    print("\n>>> CONDITIONAL EDGE: check_if_prologue_completed")
     if state.is_prologue_completed:
         return n(decision_game_graph)
     else:
         return n(generate_or_edit_prologue)
 
-g = StateGraph(input=OverallState, output=OutputState)
-g.add_edge(START, "is_prologue_done")
 
-g.add_node("is_prologue_done", RunnablePassthrough())
-g.add_conditional_edges("is_prologue_done", router, [n(decision_game_graph), n(generate_or_edit_prologue)])
+g = StateGraph(input=OverallState, output=OutputState)
+g.add_edge(START, n(check_if_prologue_completed))
+
+g.add_node(n(check_if_prologue_completed), RunnablePassthrough())
+g.add_conditional_edges(
+    n(check_if_prologue_completed),
+    check_if_prologue_completed,
+    [n(decision_game_graph), n(generate_or_edit_prologue)],
+)
 
 g.add_node(generate_or_edit_prologue)
 g.add_edge(n(generate_or_edit_prologue), "get_feedback_from_user")
 
 g.add_node("get_feedback_from_user", RunnablePassthrough())
-g.add_edge("get_feedback_from_user", "is_prologue_done")
+g.add_edge("get_feedback_from_user", n(check_if_prologue_completed))
 
 g.add_node(n(decision_game_graph), decision_game_graph)
 g.add_edge(n(decision_game_graph), "check_if_story_completed")
@@ -135,7 +147,7 @@ g.add_node("check_if_story_completed", RunnablePassthrough())
 g.add_conditional_edges(
     "check_if_story_completed",
     lambda state: END if state.is_story_completed else n(decision_game_graph),
-    [END, n(decision_game_graph)]
+    [END, n(decision_game_graph)],
 )
 
 os.makedirs("./data/graph_checkpoints", exist_ok=True)
