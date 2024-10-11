@@ -21,31 +21,31 @@ if not main_graph.get_state(config).values:
     )
     print("\nFirst Prologue draft is generated")
 
-    user_feedback_list = [
+    prologue_feedback_list = [
         "It's too grandiose. I want the prologue to start from a more normal and mundane life.",
         "Make the main character super poor and miserable.",
         "Don't use the detail of me in a ackward way. For example, the detail of the brown horn-rimmmed glasses is not necessary in this prologue.",
     ]
 
-    for i, user_feedback in enumerate(user_feedback_list):
+    for i, prologue_feedback in enumerate(prologue_feedback_list):
         main_graph.update_state(
             config,
             {
-                "user_feedback": user_feedback,
+                "prologue_feedback": prologue_feedback,
             },
             as_node="get_feedback_from_user",
         )
         output = main_graph.invoke(None, config)
-        print(f"==>> Completed {i+1} / {len(user_feedback_list)} Feedback")
+        print(f"==>> Completed {i+1} / {len(prologue_feedback_list)} Feedback")
 
     while True:
-        user_feedback = input("\nEnter a feedback:")
-        if user_feedback == "q":
+        prologue_feedback = input("\nEnter a feedback:")
+        if prologue_feedback == "q":
             break
         main_graph.update_state(
             config,
             {
-                "user_feedback": user_feedback,
+                "prologue_feedback": prologue_feedback,
             },
             as_node="get_feedback_from_user",
         )

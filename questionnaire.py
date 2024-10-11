@@ -1,3 +1,85 @@
+from typing import Literal
+LEVELS = Literal[
+    "EarlyElementary(Grades1-3/Ages6-9)",
+    "UpperElementary(Grades4-6/Ages9-12)",
+    "MiddleSchool(Grades7-9/Ages12-15)",
+    "HighSchool(Grades10-12/Ages15-18)",
+    "UnivFreshman(Ages18-19)",
+    "UnivSophomore(Ages19-20)",
+    "UnivJunior(Ages20-21)",
+    "UnivSenior(Ages21-22)",
+    "EmergingProfessionals(Ages22-35)",
+    "MatureAdults(Ages35-50)",
+    "MidlifeAndBeyond(Ages50-65)",
+    "SeniorAdults(Ages65+)",
+]
+
+LEVEL_OPTIONS = [
+    ("EarlyElementary(Grades1-3/Ages6-9)", "Early Elementary (Grades 1-3 / Ages 6-9)"),
+    (
+        "UpperElementary(Grades4-6/Ages9-12)",
+        "Upper Elementary (Grades 4-6 / Ages 9-12)",
+    ),
+    ("MiddleSchool(Grades7-9/Ages12-15)", "Middle School (Grades 7-9 / Ages 12-15)"),
+    ("HighSchool(Grades10-12/Ages15-18)", "High School (Grades 10-12 / Ages 15-18)"),
+    ("UnivFreshman(Ages18-19)", "University Freshman (Ages 18-19)"),
+    ("UnivSophomore(Ages19-20)", "University Sophomore (Ages 19-20)"),
+    ("UnivJunior(Ages20-21)", "University Junior (Ages 20-21)"),
+    ("UnivSenior(Ages21-22)", "University Senior (Ages 21-22)"),
+    ("EmergingProfessionals(Ages22-35)", "Emerging Professionals (Ages 22-35)"),
+    ("MatureAdults(Ages35-50)", "Mature Adults (Ages 35-50)"),
+    ("MidlifeAndBeyond(Ages50-65)", "Midlife and Beyond (Ages 50-65)"),
+    ("SeniorAdults(Ages65+)", "Senior Adults (Ages 65+)"),
+]
+
+GENRE = Literal[
+    "fantasy",
+    "scifi",
+    "mystery",
+    "romance",
+    "adventure",
+    "horror",
+    "thriller",
+    "historical_fiction",
+    "contemporary_fiction",
+    "literary_fiction",
+    "dystopian",
+    "young_adult",
+    "crime",
+    "comedy",
+    "drama",
+    "action",
+    "western",
+    "magical_realism",
+    "urban_fantasy",
+    "paranormal",
+]
+
+GENRE_OPTIONS = [
+    ("fantasy", "Fantasy"),
+    ("scifi", "Science Fiction"),
+    ("mystery", "Mystery"),
+    ("romance", "Romance"),
+    ("adventure", "Adventure"),
+    ("horror", "Horror"),
+    ("thriller", "Thriller"),
+    ("historical_fiction", "Historical Fiction"),
+    ("contemporary_fiction", "Contemporary Fiction"),
+    ("literary_fiction", "Literary Fiction"),
+    ("dystopian", "Dystopian"),
+    ("young_adult", "Young Adult"),
+    ("crime", "Crime"),
+    ("comedy", "Comedy"),
+    ("drama", "Drama"),
+    ("action", "Action"),
+    ("western", "Western"),
+    ("magical_realism", "Magical Realism"),
+    ("urban_fantasy", "Urban Fantasy"),
+    ("paranormal", "Paranormal"),
+]
+
+
+
 PROFILE = {
     "1":{
         "question": "What is your name?",
@@ -21,7 +103,7 @@ PROFILE = {
     },
     "6":{
         "question": "Describe yourself appearance if you feel it comfortable to share",
-        "answer": "Asian male, 173cm, 58kg, slim but muscular, taned skin, black long curly hair, brown eyes, clean shaven, wears brown horn-rimmed glasses, average looks",
+        "answer": "Asian male, 173cm, 58kg, slim but muscular, tanned skin, black long curly hair, brown eyes, clean shaven, wears brown horn-rimmed glasses, average looks",
     },
     "7":{
         "question": "Describe your parents and your relationship with them",

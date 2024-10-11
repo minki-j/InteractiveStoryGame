@@ -3,6 +3,7 @@ from typing import Annotated, List, Literal
 from pydantic import BaseModel, Field
 from langgraph.graph.message import AnyMessage, add_messages
 
+from questionnaire import LEVELS
 
 # ===========================================
 #                VARIABLE SCHEMA
@@ -52,20 +53,7 @@ class InputState(BaseModel):
     profile: str
     big5: str
     genre: str
-    level: Literal[
-        "EarlyElementary(Grades1-3/Ages6-9)",
-        "UpperElementary(Grades4-6/Ages9-12)",
-        "MiddleSchool(Grades7-9/Ages12-15)",
-        "HighSchool(Grades10-12/Ages15-18)",
-        "UnivFreshman(Ages18-19)",
-        "UnivSophomore(Ages19-20)",
-        "UnivJunior(Ages20-21)",
-        "UnivSenior(Ages21-22)",
-        "EmergingProfessionals(Ages22-35)",
-        "MatureAdults(Ages35-50)",
-        "MidlifeAndBeyond(Ages50-65)",
-        "SeniorAdults(Ages65+)",
-    ]
+    level: LEVELS
 
 
 class OutputState(BaseModel):
@@ -78,7 +66,7 @@ class OverallState(InputState, OutputState):
     # Ephemeral Variables
     # MUST be RESET after each loop
     iteration_count: int = 0
-    user_feedback: str = ""
+    prologue_feedback: str = ""
     is_prologue_completed: bool = False
     is_story_completed: bool = False
     # Short Term Memory

@@ -10,12 +10,6 @@ def user_auth_before(req, session):
     if "session_id" not in session:
         print("initializing session")
         session["session_id"] = str(uuid.uuid4())
-        db.t.users.insert(
-            id=session["session_id"],
-            name="",
-            email="",
-            password="",
-        )
 
 
 beforeware = Beforeware(
@@ -121,15 +115,21 @@ setup_toasts(app)
 
 from app.views import home as home_views
 from app.views import story as story_views
-from app.controllers import plot as plot_controller
+from app.views import prologue as prologue_views
+from app.controllers import scene as scene_controller
+from app.controllers import prologue as prologue_controller
 from app.controllers import init as init_controller
 
 app.get("/")(home_views.home_view)
 
 app.post("/init")(init_controller.initialize_story)
 
-app.post("/story")(plot_controller.generate_plot)
+app.get("/prologue")(prologue_views.prologue_view)
+app.post("/prologue")(prologue_controller.apply_feedback_to_prologue)
+
 app.get("/story")(story_views.story_view)
+
+app.post("/scene")(scene_controller.generate_scene)
 
 running_on_server = os.environ.get("RAILWAY_ENVIRONMENT_NAME") == "production"
 serve(

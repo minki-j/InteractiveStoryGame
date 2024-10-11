@@ -2,7 +2,7 @@ import uuid
 
 from fasthtml.common import *
 
-from questionnaire import PROFILE, BIG5, ANSWER_OPTIONS
+from questionnaire import PROFILE, BIG5, ANSWER_OPTIONS, LEVEL_OPTIONS, GENRE_OPTIONS
 
 
 def generate_question_forms(questions, question_type):
@@ -78,12 +78,12 @@ def home_view(req, res):
                 "Please answer the following questions to generate your personalized story."
             ),
             Form(
-                hx_post="init?id=" + str(uuid.uuid4()),
+                hx_post="init",
                 hx_swap="innerHTML",
                 hx_target="main",
                 hx_target_500="#error_msg",
                 hx_indicator="#loader",
-                hx_replace_url="false",
+                hx_replace_url="true",
             )(
                 # Add email input with validation
                 Div(cls="form-group")(
@@ -99,6 +99,30 @@ def home_view(req, res):
                         style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
                         value="qmsoqm2@gmail.com",
                     ),
+                ),
+                # Genre select
+                Div(cls="form-group")(
+                    Label("Genre", for_="genre", style="font-weight: bold;"),
+                    Select(
+                        id="genre",
+                        name="genre",
+                        required=True,
+                        style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
+                        oninvalid="this.setCustomValidity('Please select a genre')",
+                        onchange="this.setCustomValidity('')",
+                    )(
+                        *[Option(label, value=value) for value, label in GENRE_OPTIONS]
+                    ),
+                ),
+                # Level select
+                Div(cls="form-group")(
+                    Label("Level", for_="level", style="font-weight: bold;"),
+                    Select(
+                        id="level",
+                        name="level",
+                        required=True,
+                        style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
+                    )(*[Option(label, value=value) for value, label in LEVEL_OPTIONS]),
                 ),
                 Div(cls="form-group")(
                     H2(

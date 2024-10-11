@@ -102,7 +102,7 @@ I've enjoyed the story, but have some feedback on the prologue. Please edit the 
 
         prompt = prompt_for_editing_prologue.invoke(
             {
-                "feedback": state.user_feedback,
+                "feedback": state.prologue_feedback,
             },
         )
 
