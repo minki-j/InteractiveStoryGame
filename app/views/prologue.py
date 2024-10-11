@@ -21,7 +21,7 @@ def prologue_view(req: Request, id: str):
             P(cls="marked")(story_data.prologue),
             Form(
                 hx_post=f"/prologue?id={id}",
-                hx_swap="innerHTML",
+                hx_swap="outerHTML",
                 hx_target="main",
                 hx_indicator="#feedback-loader",
             )(
@@ -37,7 +37,7 @@ def prologue_view(req: Request, id: str):
             ),
             Button(
                 hx_post=f"/scene?id={id}",
-                hx_swap="innerHTML",
+                hx_swap="outerHTML",
                 hx_target="main",
                 hx_indicator="#feedback-loader",
                 cls="btn-submit contrast",

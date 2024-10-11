@@ -75,11 +75,8 @@ while True:
         print("Invalid input. Please enter a valid integer.")
         continue
 
-    state = main_graph.get_state(config, subgraphs=True)
-    subgraph_config = state.tasks[0].state.config  # config of the subgraph
-
     main_graph.update_state(
-        subgraph_config,
+        config,
         {
             "user_choice": user_choice_int,
         },

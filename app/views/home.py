@@ -79,7 +79,7 @@ def home_view(req, res):
             ),
             Form(
                 hx_post="init",
-                hx_swap="innerHTML",
+                hx_swap="outerHTML",
                 hx_target="main",
                 hx_target_500="#error_msg",
                 hx_indicator="#loader",

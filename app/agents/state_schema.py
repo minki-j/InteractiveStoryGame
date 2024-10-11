@@ -41,6 +41,7 @@ def update_story(original: List[Scene], new: List[Scene]):
                 original_scene.question = scene.question
                 original_scene.choices = scene.choices
                 break
+        # if not found, append
         original.append(scene)
 
     return original
@@ -69,6 +70,8 @@ class OverallState(InputState, OutputState):
     prologue_feedback: str = ""
     is_prologue_completed: bool = False
     is_story_completed: bool = False
+    user_choice: int = Field(default=None)
+    
     # Short Term Memory
     # MAY be UPDATED after each loop
 

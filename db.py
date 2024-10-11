@@ -27,31 +27,15 @@ if stories not in db.t:
         user_id=str,
         title=str,
         prologue=str,
-        scenes=str,  # Change this to str to store JSON
+        scenes=str, 
         pk="id",
         foreign_keys=(("user_id", "users")),
         if_not_exists=True,
     )
 
-# Scene serialization/deserialization
-def scene_to_json(scene: Scene) -> str:
-    return json.dumps(scene.dict())
-
-def json_to_scene(scene_json: str) -> Scene:
-    return Scene(**json.loads(scene_json))
-
-class Stories(stories.dataclass()):
-    @property
-    def scenes(self) -> List[Scene]:
-        return [json_to_scene(scene) for scene in json.loads(self._scenes)]
-    
-    @scenes.setter
-    def scenes(self, value: List[Scene]):
-        self._scenes = json.dumps([scene_to_json(scene) for scene in value])
-
-Stories = Stories
 
 Users = users.dataclass()
+Stories = stories.dataclass()
 
 # try:
 #     main_db_diagram = diagram(db.tables)

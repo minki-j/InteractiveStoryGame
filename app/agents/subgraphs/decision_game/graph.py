@@ -33,7 +33,6 @@ class InteractiveScene(BaseModel):
 class DecisionGameState(BaseModel):
     drafts: List[str] = Field(default_factory=lambda: [])
     interactive_scene: InteractiveScene = Field(default=None)
-    user_choice: int = Field(default=None)
     scene: Scene = Field(default=None)
     profile: str = Field(default=None)
     big5: str = Field(default=None)
@@ -120,7 +119,7 @@ def pick_the_best_draft(state: DecisionGameState) -> DecisionGameState:
     return {"drafts": [state.drafts[0]]}
 
 
-def add_a_decision_point(state: DecisionGameState) -> DecisionGameState:
+def add_a_decision_point(state: DecisionGameState) -> OverallState:
     print("\n>>> NODE: add_a_decision_point")
     normal_scene_example = """
     Emily sat at the table with her friends, but something felt off. As the laughter and conversation swirled around her, she noticed that Julia had been unusually quiet all evening. Emily caught her glancing at her phone a few times, a worried expression on her face. It wasn’t like Julia to withdraw like this, especially at gatherings. Emily wanted to ask her what was wrong, but she wasn't sure if it was the right moment. Nevertheless, Emily decided to ask Julia. Emily leaned in closer, lowering her voice just enough to cut through the lively chatter around the table. "Hey, is everything okay? You seem a bit off tonight. Julia blinked, startled as if pulled out of a different world. She hesitated for a moment, then looked down at her phone again, biting her lip. "I... I don’t know," she began, her voice barely above a whisper. "I didn’t want to make a big deal out of it, but... I just got some weird texts from a number I don’t recognize. It’s been happening all week." Emily’s heart sank, sensing the unease in her friend. "Weird, like... threatening? Or just random?"
@@ -179,12 +178,18 @@ Follow the following instructions to convert the scene into an interactive scene
         }
     )
 
+    scene = Scene(
+        question=interactive_scene.amended_scene,
+        choices=[Choice(title=choice.title, detail=choice.detail) for choice in interactive_scene.choices],
+        completed_scene="",
+    )
+
     return {
-        "interactive_scene": interactive_scene,
+        "story": [scene],
     }
 
 
-def let_the_reader_decide(state: DecisionGameState) -> OverallState:
+def let_the_reader_decide(state: OverallState) -> OverallState:
     print("\n>>> NODE: let_the_reader_decide")
 
     chain = (
@@ -231,22 +236,21 @@ Let your creativity flow as you bring this character to life and conclude their 
             "profile": state.profile,
             "big5": state.big5,
             "genre": state.genre,
-            "interactive_scene": state.interactive_scene.amended_scene,
-            "user_choice": state.interactive_scene.choices[state.user_choice],
+            "interactive_scene": state.story[-1].question,
+            "user_choice": state.story[-1].choices[state.user_choice].title,
         }
     )
-    print(f"==>> completed_scene")
-    story = Scene(
-        question=state.interactive_scene.amended_scene,
+    
+    scene = Scene(
+        question=state.story[0].question,
         choices=[
             Choice(title=choice.title, detail=choice.detail, chosen=(index == state.user_choice))
-            for index, choice in enumerate(state.interactive_scene.choices)
+            for index, choice in enumerate(state.story[-1].choices)
         ],
         completed_scene=completed_scene,
     )
-    print(f"==>> story")
 
-    return {"story": [story]}
+    return {"story": [scene]}
 
 
 g = StateGraph(OverallState)

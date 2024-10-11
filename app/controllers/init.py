@@ -38,7 +38,6 @@ async def initialize_story(session, request: Request):
         },
         config={"configurable": {"thread_id": story_id}, "recursion_limit": 100},
     )
-    print(f"\n>>> main_graph returned:\nPrologue: {response['prologue'][:100]}\nStory: {response['story'][0][:100] if len(response['story']) > 0 else ''}")
 
     if response:
         # Check if user exists without raising an exception
