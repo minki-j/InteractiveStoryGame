@@ -19,7 +19,6 @@ class Choice(BaseModel):
 
 class Scene(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    # title: str
     question: str
     choices: List[Choice]
     completed_scene: str = Field(default="")
@@ -29,20 +28,41 @@ class Scene(BaseModel):
 #                REDUCER FUNCTIONS
 # ===========================================
 
-
+#! This reducer function is called for 6 times at NODE: let_the_reader_decide
 def update_story(original: List[Scene], new: List[Scene]):
+    print(f">>>>> update_story original: {len(original)} new: {len(new)}")
+
+    # print(">>>>> original")
+    # for scene in original:
+    #     print(scene.id)
+    #     print(scene.question[:30])
+
+    # print(">>>>> new")
+    # for scene in new:
+    #     print(scene.id)
+    #     print(scene.question[:30])
+
     if len(original) == 0:
         return new
 
     for scene in new:
+        found = False
         for original_scene in original:
             if scene.id == original_scene.id:
-                # original_scene.title = scene.title
                 original_scene.question = scene.question
                 original_scene.choices = scene.choices
+                original_scene.completed_scene = scene.completed_scene
+                found = True
                 break
-        # if not found, append
-        original.append(scene)
+        if not found:
+            original.append(scene)
+
+    # print(f">>>>> updated story: {len(original)}")
+    # for scene in original:
+    #     print(scene.id)
+    #     print(scene.question[:30])
+
+    # print("\n\n")
 
     return original
 
@@ -70,8 +90,7 @@ class OverallState(InputState, OutputState):
     prologue_feedback: str = ""
     is_prologue_completed: bool = False
     is_story_completed: bool = False
-    user_choice: int = Field(default=None)
-    
+
     # Short Term Memory
     # MAY be UPDATED after each loop
 

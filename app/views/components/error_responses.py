@@ -12,7 +12,7 @@ def error_modal(message: str, status_code: int = 500):
                 )(
                     Button(
                         "×",
-                        cls="close-btn",
+                        cls="btn-loader close-btn",
                         onclick="this.parentElement.parentElement.remove()",
                     ),
                     H2("Error"),

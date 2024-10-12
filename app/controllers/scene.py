@@ -3,10 +3,7 @@ import json
 from fasthtml.common import *
 from app.views.components.error_responses import error_modal
 from app.agents.main_graph import main_graph
-from db import db, Stories, Scene  # Import Stories and Scene
-
-from app.agents.state_schema import Scene
-
+from db import db
 
 async def generate_scene(req, id: str):
     print("\n>>> CNTRL generate_scene")
@@ -27,8 +24,9 @@ async def generate_scene(req, id: str):
     else:
         form_data = await req.form()
         user_choice = form_data.get("chosen_option_index")
+        subgraph_config = state.tasks[0].state.config
         main_graph.update_state(
-            config,
+            subgraph_config,
             {
                 "user_choice": int(user_choice),
             },

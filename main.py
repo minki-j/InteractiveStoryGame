@@ -58,8 +58,6 @@ app, _ = fast_app(
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #000000;
-    font-size: 14px;
     animation: pulse 2s ease-in-out infinite !important;
 }
 @keyframes pulse {
@@ -96,8 +94,15 @@ app, _ = fast_app(
     font-size: 24px;
     cursor: pointer;
     border: none;
-}pipp
-    """
+}
+.container {
+    max-width: 35rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+"""
         ),
     ),
     exception_handlers={

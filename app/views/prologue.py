@@ -23,7 +23,8 @@ def prologue_view(req: Request, id: str):
                 hx_post=f"/prologue?id={id}",
                 hx_swap="outerHTML",
                 hx_target="main",
-                hx_indicator="#feedback-loader",
+                hx_indicator=".btn-loader",
+                hx_replace_url="true",
             )(
                 Textarea(
                     name="feedback",
@@ -31,19 +32,18 @@ def prologue_view(req: Request, id: str):
                     rows=4,
                     style="width: 100%; margin-bottom: 10px;",
                 ),
-                Button(type="submit", cls="btn-submit", style="margin-bottom: 10px")(
-                    "Change Prologue With Feedback"
-                ),
+                Button(
+                    type="submit",
+                    cls="btn-loader",
+                    style="margin-bottom: 10px",
+                )("Change Prologue With Feedback"),
             ),
             Button(
                 hx_post=f"/scene?id={id}",
                 hx_swap="outerHTML",
                 hx_target="main",
-                hx_indicator="#feedback-loader",
-                cls="btn-submit contrast",
+                cls="btn-loader outline",
                 style="margin-top: 0; width: 100%;",
             )("Accept Prologue & Continue Story"),
         ),
     )
-
-

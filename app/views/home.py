@@ -82,7 +82,7 @@ def home_view(req, res):
                 hx_swap="outerHTML",
                 hx_target="main",
                 hx_target_500="#error_msg",
-                hx_indicator="#loader",
+                hx_indicator=".btn-loader",
                 hx_replace_url="true",
             )(
                 # Add email input with validation
@@ -143,7 +143,6 @@ def home_view(req, res):
                 Button(
                     type="submit",
                     cls="btn-loader btn-submit",
-                    style="",
                 )("Generate Story"),
             ),
         ),

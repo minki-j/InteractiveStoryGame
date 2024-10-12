@@ -12,7 +12,7 @@ from app.agents.state_schema import OverallState, OutputState
 
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from typing import List
+from typing import Annotated, List
 from app.agents.llm_models import chat_model_small, chat_model
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, RemoveMessage
@@ -33,6 +33,8 @@ class InteractiveScene(BaseModel):
 class DecisionGameState(BaseModel):
     drafts: List[str] = Field(default_factory=lambda: [])
     interactive_scene: InteractiveScene = Field(default=None)
+    story: List[Scene]= Field(default_factory=lambda: []) #! there can be the same state variables in different states. when this variable name is returned, both state will be updated. This is confusing, and need to be fixed.
+    user_choice: int = Field(default=None)
     scene: Scene = Field(default=None)
     profile: str = Field(default=None)
     big5: str = Field(default=None)
@@ -189,7 +191,7 @@ Follow the following instructions to convert the scene into an interactive scene
     }
 
 
-def let_the_reader_decide(state: OverallState) -> OverallState:
+def let_the_reader_decide(state: DecisionGameState) -> OverallState:
     print("\n>>> NODE: let_the_reader_decide")
 
     chain = (
@@ -223,7 +225,7 @@ Let your creativity flow as you bring this character to life and conclude their 
                 ),
                 (
                     "human",
-                    "Complete the story based on the choices the reader made.\n\nScene: {interactive_scene}\n\nChoice the reader made: {user_choice}\n\n---\n\nDon't generate the whole story. Keep the generation 300 words or less.",
+                    "Continue writing the story based on the choices the reader made.\n\n---\n\nScene: {interactive_scene}\n\n---\n\nChoice the reader made: {user_choice}\n\n---\n\n**Important Rules**\n1. Don't repeat the scene and just continue the story.\n2. Keep the generation 300 words or less.",
                 ),
             ]
         )
@@ -238,13 +240,18 @@ Let your creativity flow as you bring this character to life and conclude their 
             "genre": state.genre,
             "interactive_scene": state.story[-1].question,
             "user_choice": state.story[-1].choices[state.user_choice].title,
-        }
+        }  
     )
-    
+
     scene = Scene(
+        id=state.story[-1].id,
         question=state.story[0].question,
         choices=[
-            Choice(title=choice.title, detail=choice.detail, chosen=(index == state.user_choice))
+            Choice(
+                title=choice.title,
+                detail=choice.content,
+                chosen=(index == state.user_choice),
+            )
             for index, choice in enumerate(state.story[-1].choices)
         ],
         completed_scene=completed_scene,
