@@ -20,25 +20,36 @@ from langchain_core.runnables import RunnableParallel
 
 from app.agents.state_schema import Scene, Choice
 
+
 class InteractiveSceneChoice(BaseModel):
     title: str = Field(description="A short sentence describing the choice")
     detail: str = Field(description="The detail of the choice")
 
+
 class InteractiveScene(BaseModel):
-    sketchpad: str = Field(description="You can use this for chain of thought reasoning or planning")
-    amended_scene: str = Field(description="The interactive scene that ends with a decision point")
-    choices: List[InteractiveSceneChoice] = Field(description="Five possible choices for the decision point of the interactive scene")
+    sketchpad: str = Field(
+        description="You can use this for chain of thought reasoning or planning"
+    )
+    amended_scene: str = Field(
+        description="The interactive scene that ends with a decision point"
+    )
+    choices: List[InteractiveSceneChoice] = Field(
+        description="Five possible choices for the decision point of the interactive scene"
+    )
 
 
 class DecisionGameState(BaseModel):
     drafts: List[str] = Field(default_factory=lambda: [])
     interactive_scene: InteractiveScene = Field(default=None)
-    story: List[Scene]= Field(default_factory=lambda: []) #! there can be the same state variables in different states. when this variable name is returned, both state will be updated. This is confusing, and need to be fixed.
+    story: List[Scene] = Field(
+        default_factory=lambda: []
+    )  #! there can be the same state variables in different states. when this variable name is returned, both state will be updated. This is confusing, and need to be fixed.
     user_choice: int = Field(default=None)
     scene: Scene = Field(default=None)
     profile: str = Field(default=None)
     big5: str = Field(default=None)
     genre: str = Field(default=None)
+    level: str = Field(default=None)
 
 
 def generate_multiple_draft(state: OverallState) -> DecisionGameState:
@@ -51,7 +62,7 @@ def generate_multiple_draft(state: OverallState) -> DecisionGameState:
                 (
                     "system",
                     """
-You are a celebrated {genre} fantasy fiction writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
+You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
 ---
 
 **Reader's level**: {level}
@@ -62,7 +73,7 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 ---
 
-**Big Five Personality Test Results**: {big5}
+**Reader's Personality**: {big5}
 
 ---
 
@@ -72,8 +83,11 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 2. **Engaging Narrative**: The prologue should be a compelling conclusion to the story, wrapping up loose ends while leaving readers with a sense of wonder or reflection. Incorporate elements of magic, adventure or personal growth relevant to the character.
 
-3. **Genre**: The story should be a {genre} story.
+3. **Genre**: should be {genre}.
 
+4. **Length**: should be 150 words or less.
+
+5. **Level**: The vocabulary of the story should be appropriate for {level}.
 
 ---
 
@@ -101,9 +115,9 @@ Let your creativity flow as you bring this character to life and conclude their 
                 else ""
             ),
             "human_instruction": (
-                "Continue the story from the last scene, maintaining the same tone and pacing. Focus on character emotions, actions, and any unresolved plot points. The story should naturally build on what has already happened. Keep the generation 300 words or less."
+                "Continue the story from the last scene, maintaining the same tone and pacing. Focus on character emotions, actions, and any unresolved plot points. The story should naturally build on what has already happened. Keep the generation 150 words or less."
                 if len(state.story) > 0
-                else "Start the first scene that comes after the prologue. Keep the generation 300 words or less."
+                else "Start the first scene that comes after the prologue. Keep the generation 150 words or less."
             ),
         }
     )
@@ -113,6 +127,7 @@ Let your creativity flow as you bring this character to life and conclude their 
         "profile": state.profile,
         "big5": state.big5,
         "genre": state.genre,
+        "level": state.level,
     }
 
 
@@ -147,7 +162,7 @@ choices: [
                     (
                         "system",
                         """
-You are a seasoned Interactive Fiction writer. Interactive Fiction is a story format where the reader can make choices on how to react or behave at crucial moments. 
+You are a seasoned interactive fiction writer. Interactive fiction is a story format where the reader can make choices on how to react or behave at crucial moments. 
 Your task is to help the user convert parts of a plain story into an interactive fiction scene. 
 
 For example, let's say the user provides you with the following normal scene:
@@ -160,6 +175,7 @@ Follow the following instructions to convert the scene into an interactive scene
 1. Identify a decision point in the scene. This can be either a reaction or a behavior. If there are multiple decision points, choose the most important one. If there is no decision point, you could create one.
 2. Amend the scene so that it ends with a decision point and the reader can make a choice.
 3. Generate five possible choices for the character.
+4. The length of the amended scene should be 150 words or less.
 """,
                     ),
                     (
@@ -182,7 +198,10 @@ Follow the following instructions to convert the scene into an interactive scene
 
     scene = Scene(
         question=interactive_scene.amended_scene,
-        choices=[Choice(title=choice.title, detail=choice.detail) for choice in interactive_scene.choices],
+        choices=[
+            Choice(title=choice.title, detail=choice.detail)
+            for choice in interactive_scene.choices
+        ],
         completed_scene="",
     )
 
@@ -200,14 +219,14 @@ def let_the_reader_decide(state: DecisionGameState) -> OverallState:
                 (
                     "system",
                     """
-You are a celebrated {genre} fantasy fiction writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
+You are a celebrated {genre}  writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
 ---
 
 **Reader Profile**: {profile}
 
 ---
 
-**Big Five Personality Test Results**: {big5}
+**Reader's Personality**: {big5}
 
 ---
 
@@ -219,13 +238,34 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 3. **Genre**: The story should be a {genre} story.
 
+4. **Length**: should be 150 words or less.
+
+5. **Level**: The vocabulary of the story should be appropriate for {level}.
+
 ---
 
 Let your creativity flow as you bring this character to life and conclude their journey in a way that is both satisfying and thought-provoking!""",
                 ),
                 (
                     "human",
-                    "Continue writing the story based on the choices the reader made.\n\n---\n\nScene: {interactive_scene}\n\n---\n\nChoice the reader made: {user_choice}\n\n---\n\n**Important Rules**\n1. Don't repeat the scene and just continue the story.\n2. Keep the generation 300 words or less.",
+                    """
+Continue writing the story based on the choices the reader made.
+
+---
+
+Scene: {interactive_scene}
+
+---
+
+Choice the reader made: {user_choice}
+
+---
+
+**Important Rules**
+1. Don't repeat the scene and just continue the story.
+2. Keep the generation 150 words or less.
+3. The vocabulary of the story should be appropriate for {level}.
+""",
                 ),
             ]
         )
@@ -238,9 +278,10 @@ Let your creativity flow as you bring this character to life and conclude their 
             "profile": state.profile,
             "big5": state.big5,
             "genre": state.genre,
+            "level": state.level,
             "interactive_scene": state.story[-1].question,
             "user_choice": state.story[-1].choices[state.user_choice].title,
-        }  
+        }
     )
 
     scene = Scene(

@@ -9,7 +9,7 @@ db_path = os.path.join(".", "data", "main_database", "main.db")
 print(f">>>> DB: initialize database at {db_path}")
 db = database(db_path)
 
-users, stories = (db.t.users, db.t.stories)
+users, stories, counts = (db.t.users, db.t.stories, db.t.counts)
 
 if users not in db.t:
     print("\n>>>> DB: Creating users table")
@@ -27,15 +27,20 @@ if stories not in db.t:
         user_id=str,
         title=str,
         prologue=str,
-        scenes=str, 
+        scenes=str,
         pk="id",
         foreign_keys=(("user_id", "users")),
         if_not_exists=True,
     )
 
 
+if counts not in db.t:
+    print("\n>>>> DB: Creating counts table")
+    counts.create(dict(name=str, count=int), pk="name")
+
 Users = users.dataclass()
 Stories = stories.dataclass()
+Count = counts.dataclass()
 
 # try:
 #     main_db_diagram = diagram(db.tables)

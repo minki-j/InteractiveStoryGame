@@ -5,69 +5,8 @@ from fasthtml.common import *
 from questionnaire import PROFILE, BIG5, ANSWER_OPTIONS, LEVEL_OPTIONS, GENRE_OPTIONS
 
 
-def generate_question_forms(questions, question_type):
-    if question_type == "profile":
-        return [
-            Div(
-                P(q_data["question"]),
-                Input(
-                    type="text",
-                    name=f"profile_{q_id}",
-                    required=True,
-                    value=q_data["answer"],
-                ),
-            )
-            for q_id, q_data in questions.items()
-        ]
-    elif question_type == "big5":
-        return [
-            Div(cls="question-container")(
-                P(q_data["question"], cls="question-text"),
-                Table(cls="response-table")(
-                    Tr(
-                        Th(""),
-                        *[
-                            Th(option, cls="response-option")
-                            for option in ANSWER_OPTIONS
-                        ],
-                    ),
-                    Tr(
-                        Td("My current self"),
-                        *[
-                            Td(
-                                Input(
-                                    type="radio",
-                                    name=f"big5_current_{q_id}",
-                                    value=option,
-                                    required=True,
-                                    checked=q_data["current"] == option,
-                                )
-                            )
-                            for option in ANSWER_OPTIONS
-                        ],
-                    ),
-                    Tr(
-                        Td("I want to become"),
-                        *[
-                            Td(
-                                Input(
-                                    type="radio",
-                                    name=f"big5_goal_{q_id}",
-                                    value=option,
-                                    required=True,
-                                    checked=q_data["goal"] == option,
-                                )
-                            )
-                            for option in ANSWER_OPTIONS
-                        ],
-                    ),
-                ),
-            )
-            for q_id, q_data in questions.items()
-        ]
+def home_view(session, req, res):
 
-
-def home_view(req, res):
     return (
         Title("Story Sim"),
         Main(cls="container", style="max-width: 800px; margin: 0 auto; padding: 20px;")(
@@ -85,22 +24,20 @@ def home_view(req, res):
                 hx_indicator=".btn-loader",
                 hx_replace_url="true",
             )(
-                # Add email input with validation
-                Div(cls="form-group")(
-                    Label("Email", for_="email", style="font-weight: bold;"),
-                    Input(
-                        type="email",
-                        id="email",
-                        name="email",
-                        required=True,
-                        placeholder="Enter your email",
-                        pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                        title="Please enter a valid email address",
-                        style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
-                        value="qmsoqm2@gmail.com",
-                    ),
-                ),
-                # Genre select
+                # Div(cls="form-group")(
+                #     Label("Email", for_="email", style="font-weight: bold;"),
+                #     Input(
+                #         type="email",
+                #         id="email",
+                #         name="email",
+                #         required=True,
+                #         placeholder="Enter your email",
+                #         pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                #         title="Please enter a valid email address",
+                #         style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
+                #         value="qmsoqm2@gmail.com",
+                #     ),
+                # ),
                 Div(cls="form-group")(
                     Label("Genre", for_="genre", style="font-weight: bold;"),
                     Select(
@@ -114,7 +51,6 @@ def home_view(req, res):
                         *[Option(label, value=value) for value, label in GENRE_OPTIONS]
                     ),
                 ),
-                # Level select
                 Div(cls="form-group")(
                     Label("Level", for_="level", style="font-weight: bold;"),
                     Select(
@@ -123,22 +59,6 @@ def home_view(req, res):
                         required=True,
                         style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;",
                     )(*[Option(label, value=value) for value, label in LEVEL_OPTIONS]),
-                ),
-                Div(cls="form-group")(
-                    H2(
-                        "Personality Questions",
-                        cls="section-title",
-                        style="font-size: 1.5rem; margin-top: 30px; margin-bottom: 20px;",
-                    ),
-                    *generate_question_forms(BIG5, "big5"),
-                ),
-                Div(cls="form-group")(
-                    H2(
-                        "Profile Questions",
-                        cls="section-title",
-                        style="font-size: 1.5rem; margin-top: 30px; margin-bottom: 20px;",
-                    ),
-                    *generate_question_forms(PROFILE, "profile"),
                 ),
                 Button(
                     type="submit",

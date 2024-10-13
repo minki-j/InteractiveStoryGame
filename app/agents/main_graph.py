@@ -1,5 +1,6 @@
 import os
 from varname import nameof as n
+import asyncio
 
 import sqlite3
 
@@ -16,6 +17,7 @@ from typing import List
 from app.agents.llm_models import chat_model_small, chat_model
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, RemoveMessage
+from langchain_core.runnables import RunnableParallel
 
 from app.agents.subgraphs.decision_game.graph import decision_game_graph
 
@@ -28,11 +30,10 @@ def generate_or_edit_prologue(state: OverallState):
     if state.prologue == "":
         prompt_for_new_prologue = ChatPromptTemplate.from_template(
             """
-You are a celebrated {genre} fantasy fiction writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a fantasy story that is 300 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
+You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a fantasy story that is 300 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
 ---
 
 **Reader's level**: {level}
-
 
 ---
 
@@ -40,7 +41,7 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 ---
 
-**Big Five Personality Test Results**: {big5}
+**Reader's Personality**: {big5}
 
 ---
 
@@ -52,6 +53,7 @@ You are a celebrated {genre} fantasy fiction writer known for your extraordinary
 
 3. **Genre**: The story should be a {genre} story.
 
+4. **Level**: The vocabulary of the story should be appropriate for {level}.
 
 ---
 
@@ -124,8 +126,40 @@ def check_if_prologue_completed(state: OverallState):
         return n(generate_or_edit_prologue)
 
 
+def verbalize_questionnaire_results(state: OverallState):
+    print("\n>>> NODE: verbalize_questionnaire_results")
+
+    chain = (
+        ChatPromptTemplate.from_template(
+            """
+You are a helpful assistant. Convert the following information into normal sentences without any numbered lists or bullet points.
+
+{content}
+
+---
+
+Output only the converted sentences, no other text or comments.
+        """
+        )
+        | chat_model_small
+        | StrOutputParser()
+    )
+
+    verbalized_profile, verbalized_big5 = chain.batch(
+        [{"content": state.profile}, {"content": state.big5}]
+    )
+
+    return {
+        "profile": verbalized_profile,
+        "big5": verbalized_big5,
+    }
+
+
 g = StateGraph(input=OverallState, output=OutputState)
-g.add_edge(START, n(check_if_prologue_completed))
+g.add_edge(START, n(verbalize_questionnaire_results))
+
+g.add_node(verbalize_questionnaire_results)
+g.add_edge(n(verbalize_questionnaire_results), n(check_if_prologue_completed))
 
 g.add_node(n(check_if_prologue_completed), RunnablePassthrough())
 g.add_conditional_edges(

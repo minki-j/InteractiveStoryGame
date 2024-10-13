@@ -1,9 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-from langchain_core.runnables import ConfigurableField
-from langchain_openai import ChatOpenAI, OpenAI
-from langchain_anthropic import ChatAnthropic, Anthropic
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 
 load_dotenv(".env", override=True)
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL")
@@ -12,11 +11,7 @@ LLM_TEMPERATURE = os.getenv("LLM_TEMPERATURE")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-o1_mini = ChatOpenAI(
-    model="o1-mini",
-    api_key=OPENAI_API_KEY,
-    temperature=LLM_TEMPERATURE,
-)
+
 
 if "claude" in DEFAULT_MODEL:
     chat_model = ChatAnthropic(
@@ -59,18 +54,19 @@ elif "gpt" in DEFAULT_MODEL:
             )
         ]
     )
-    chat_model_small = ChatOpenAI(
-        model="gpt-4o-mini",
-        api_key=OPENAI_API_KEY,
-        temperature=LLM_TEMPERATURE,
-    ).with_fallbacks(
-        [
-            ChatAnthropic(
-                model=FALLBACK_MODEL,
-                api_key=ANTHROPIC_API_KEY,
-                temperature=LLM_TEMPERATURE,
-            )
-        ]
-    )
+    chat_model_small = chat_model
+    # chat_model_small = ChatOpenAI(
+    #     model="gpt-4o-mini",
+    #     api_key=OPENAI_API_KEY,
+    #     temperature=LLM_TEMPERATURE,
+    # ).with_fallbacks(
+    #     [
+    #         ChatAnthropic(
+    #             model=FALLBACK_MODEL,
+    #             api_key=ANTHROPIC_API_KEY,
+    #             temperature=LLM_TEMPERATURE,
+    #         )
+    #     ]
+    # )
 else:
     raise ValueError("Invalid model name")

@@ -10,11 +10,26 @@ def user_auth_before(req, session):
     if "session_id" not in session:
         print("initializing session")
         session["session_id"] = str(uuid.uuid4())
+    auth = req.scope["auth"] = session.get("user_id", None)
+    if not auth:
+        print("\n>>> No auth, redirecting to login")
+        return RedirectResponse("/login", status_code=303)
+    counts = db.t.counts
+    counts.xtra(
+        name=auth
+    )  # ensures that only the row corresponding to the current user is accessible when responding to a request
 
 
 beforeware = Beforeware(
     user_auth_before,
-    skip=[r"/favicon\.ico", r"/static/.*", r".*\.css", r".*\.js", "/login"],
+    skip=[
+        r"/favicon\.ico",
+        r"/static/.*",
+        r".*\.css",
+        r".*\.js",
+        "/login",
+        "/auth_redirect",
+    ],
 )
 
 app, _ = fast_app(
@@ -58,6 +73,8 @@ app, _ = fast_app(
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    color: #000000;
+    font-size: 14px;
     animation: pulse 2s ease-in-out infinite !important;
 }
 @keyframes pulse {
@@ -121,6 +138,7 @@ setup_toasts(app)
 from app.views import home as home_views
 from app.views import story as story_views
 from app.views import prologue as prologue_views
+from app.views import login as login_views
 from app.controllers import scene as scene_controller
 from app.controllers import prologue as prologue_controller
 from app.controllers import init as init_controller
@@ -128,6 +146,9 @@ from app.controllers import init as init_controller
 app.get("/")(home_views.home_view)
 
 app.post("/init")(init_controller.initialize_story)
+
+app.get("/login")(login_views.login_view)
+app.get("/auth_redirect")(login_views.auth_redirect)
 
 app.get("/prologue")(prologue_views.prologue_view)
 app.post("/prologue")(prologue_controller.apply_feedback_to_prologue)

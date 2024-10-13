@@ -30,7 +30,7 @@ class Scene(BaseModel):
 
 #! This reducer function is called for 6 times at NODE: let_the_reader_decide
 def update_story(original: List[Scene], new: List[Scene]):
-    print(f">>>>> update_story original: {len(original)} new: {len(new)}")
+    # print(f">>>>> update_story original: {len(original)} new: {len(new)}")
 
     # print(">>>>> original")
     # for scene in original:

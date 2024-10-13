@@ -15,7 +15,6 @@ async def apply_feedback_to_prologue(req: Request, id: str):
         config={"configurable": {"thread_id": id}, "recursion_limit": 100},
     )
 
-    print(f"==>> Response: {response}")
 
     if response:
         db.t.stories.update(pk_values=id, updates={"prologue": response["prologue"]})
