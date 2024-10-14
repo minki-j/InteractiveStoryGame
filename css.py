@@ -66,22 +66,6 @@ main_css ="""
     cursor: pointer;
     border: none;
 }
-.container {
-    max-width: 35rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-.site-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--table-border-color);
-}
-
 .profile-section {
     text-align: right;
 }

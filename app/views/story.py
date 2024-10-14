@@ -9,12 +9,17 @@ def story_view(req, res, id: str):
     print("\n>>> VIEW story_view")
 
     story_data = db.t.stories.get(id)
-    scenes = json.loads(story_data.scenes)
-    previous_scene = Scene(**scenes[-2]) if len(scenes) > 1 else None
-    current_scene = Scene(**scenes[-1])
 
     if not story_data:
         raise Exception(f"Story data not found for story_id: {id}")
+    
+    if story_data.scenes is None:
+        print("===> No scenes found, redirecting to prologue")
+        return RedirectResponse("/prologue?id=" + id)
+    
+    scenes = json.loads(story_data.scenes) 
+    previous_scene = Scene(**scenes[-2]) if len(scenes) > 1 else None
+    current_scene = Scene(**scenes[-1])
 
     return (
         Title("Story"),

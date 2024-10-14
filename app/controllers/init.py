@@ -12,11 +12,7 @@ from db import db, Users, Stories
 async def initialize_story(session, request: Request):
     print("\n>>> CNTRL initialize_story")
     story_id = str(uuid.uuid4())
-    print(f"==>> story id: {story_id}")
-    print(f"==>> story genre: {form_data.get('genre')}")
-    print(f"==>> story level: {form_data.get('level')}")
-
-
+    
     form_data = await request.form()
 
     for key, value in form_data.items():

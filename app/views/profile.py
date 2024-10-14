@@ -107,7 +107,7 @@ def profile_view(session, req, res):
                 style="display: flex; justify-content: space-between; align-items: center;",
             )(
                 A(href="/")(
-                    Button(type="submit", cls="outlined")("«")
+                    Button(type="submit", cls="outline", style="padding: 0.25rem 0.75rem;")("< Back")
                 ),
                 H1("Your Profile"),
             )
