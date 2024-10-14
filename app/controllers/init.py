@@ -44,18 +44,11 @@ async def initialize_story(session, request: Request):
 
     if response:
         # Check if user exists without raising an exception
-        existing_user = db.t.users.rows_where("id = ?", [session["session_id"]])
-        if existing_user is None:
-            db.t.users.insert(
-                id=session["session_id"],
-                name=form_data.get("name"),
-                email=form_data.get("email"),
-            )
-            print(f"\n>>> User inserted with id: {session['session_id']}")
+        
 
         db.t.stories.insert(
             id=story_id,
-            user_id=session["session_id"],
+            user_id=session["user_id"],
             title="",
             prologue=response["prologue"],
         )

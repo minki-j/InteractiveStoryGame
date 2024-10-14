@@ -4,14 +4,24 @@ from fasthtml.common import *
 
 from questionnaire import PROFILE, BIG5, ANSWER_OPTIONS, LEVEL_OPTIONS, GENRE_OPTIONS
 
-
 def home_view(session, req, res):
-
     return (
         Title("Story Sim"),
         Main(cls="container", style="max-width: 800px; margin: 0 auto; padding: 20px;")(
-            A(href="/", style="text-decoration: none; color: inherit;")(
-                H1("Welcome to Story Sim")
+            Header(cls="site-header")(
+                A(href="/", style="text-decoration: none; color: inherit;")(
+                    H1("Welcome to Story Sim")
+                ),
+                Div(cls="profile-section")(
+                    Details(cls="dropdown")(
+                        Summary("Profile"),
+                        Ul(
+                            Li(A(href="/profile")("View Profile")),
+                            Li(A(href="/settings")("Settings")),
+                            Li(A(href="/logout")("Logout"))
+                        )
+                    )
+                )
             ),
             P(
                 "Please answer the following questions to generate your personalized story."
@@ -65,112 +75,5 @@ def home_view(session, req, res):
                     cls="btn-loader btn-submit",
                 )("Generate Story"),
             ),
-        ),
-        Style(
-            """
-.question-container {
-    margin-bottom: 25px;
-    background-color: var(--card-background-color);
-    padding: 15px;
-    border-radius: 8px;
-}
-
-.question-text {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.radio-group {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    margin-right: 10px;
-    margin-bottom: 5px;
-    cursor: pointer;
-}
-
-.radio-group input[type="radio"] {
-    margin-right: 5px;
-}
-
-.radio-label {
-    font-size: 14px;
-}
-
-.btn-submit {
-    background-color: var(--primary);
-    color: var(--primary-inverse);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn-submit:hover {
-    background-color: var(--primary-hover);
-}
-
-.response-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    table-layout: fixed;
-}
-
-.response-table th, .response-table td {
-    text-align: center;
-    vertical-align: middle;
-    padding: 5px;
-    border: 1px solid var(--table-border-color);
-    font-size: 0.75rem;
-}
-
-.response-table td:first-child {
-    text-align: center;
-}
-
-.response-table th:nth-child(2) { background-color: var(--color-1); }
-.response-table th:nth-child(3) { background-color: var(--color-2); }
-.response-table th:nth-child(4) { background-color: var(--color-3); }
-.response-table th:nth-child(5) { background-color: var(--color-4); }
-.response-table th:nth-child(6) { background-color: var(--color-5); }
-
-@media (prefers-color-scheme: dark) {
-    .response-table th:nth-child(2) { background-color: var(--color-1-dark); }
-    .response-table th:nth-child(3) { background-color: var(--color-2-dark); }
-    .response-table th:nth-child(4) { background-color: var(--color-3-dark); }
-    .response-table th:nth-child(5) { background-color: var(--color-4-dark); }
-    .response-table th:nth-child(6) { background-color: var(--color-5-dark); }
-    .question-container {
-        background-color: var(--card-background-color-dark);
-    }
-}
-
-:root {
-    --color-1: #ffcccb;
-    --color-2: #ffdab9;
-    --color-3: #fffacd;
-    --color-4: #e0ffb1;
-    --color-5: #b3e0ff;
-    --color-1-dark: #664e4e;
-    --color-2-dark: #665952;
-    --color-3-dark: #66655c;
-    --color-4-dark: #5c664a;
-    --color-5-dark: #4a5966;
-    --primary: #007bff;
-    --primary-inverse: #fff;
-    --primary-hover: #0056b3;
-    --table-border-color: #ddd;
-    --card-background-color: #f5f5f5;
-    --card-background-color-dark: #333333;
-}
-"""
         ),
     )

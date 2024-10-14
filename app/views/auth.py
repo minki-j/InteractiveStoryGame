@@ -34,20 +34,3 @@ def login_view(session, req, res):
     )
 
 
-def auth_redirect(code: str, request, session):
-    print("\n>>> VIEW: auth_redirect")
-    redir = redir_url(request, auth_callback_path)
-    redir = "http://localhost:5001/auth_redirect"
-    user_info = client.retr_info(code, redir)
-    user_id = user_info[client.id_key] 
-    session["user_id"] = user_id
-    print(f"===> user_id: {user_id} saved in session")
-
-    counts = db.t.counts
-    if user_id not in counts:
-        counts.insert(name=user_id, count=0)
-        print(f"===> created user {user_id} in db")
-
-    print("===> redirecting to /")
-    return Div("Auth redirect complete")
-    return RedirectResponse("/", status_code=303)

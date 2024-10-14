@@ -17,6 +17,8 @@ if users not in db.t:
         id=str,
         name=str,
         email=str,
+        profile=str,  # json string
+        big5=str,  # json string
         pk="id",
     )
 
@@ -34,13 +36,8 @@ if stories not in db.t:
     )
 
 
-if counts not in db.t:
-    print("\n>>>> DB: Creating counts table")
-    counts.create(dict(name=str, count=int), pk="name")
-
 Users = users.dataclass()
 Stories = stories.dataclass()
-Count = counts.dataclass()
 
 # try:
 #     main_db_diagram = diagram(db.tables)
