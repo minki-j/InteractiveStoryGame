@@ -18,6 +18,7 @@ def prologue_view(req: Request, id: str):
             A(href="/", style="text-decoration: none; color: inherit;")(
                 H1("Story Sim")
             ),
+            H2(story_data.title),
             P(cls="marked")(story_data.prologue),
             Form(
                 hx_post=f"/prologue?id={id}",

@@ -16,11 +16,6 @@ def user_auth_before(req, session):
     if not auth or not user:
         print("\n>>> No auth, redirecting to login")
         return RedirectResponse("/login", status_code=303)
-    counts = db.t.counts
-    counts.xtra(
-        name=auth
-    )  # ensures that only the row corresponding to the current user is accessible when responding to a request
-
 
 beforeware = Beforeware(
     user_auth_before,
@@ -73,6 +68,8 @@ from app.controllers import auth as auth_controller
 from app.views import profile as profile_views
 from app.views import settings as settings_views
 from app.controllers import profile as profile_controller
+from app.controllers import delete_story as delete_story_controller
+
 # Managements
 app.get("/")(home_views.home_view)
 app.get("/login")(auth_views.login_view)
@@ -82,6 +79,7 @@ app.get("/settings")(settings_views.settings_view)
 app.get("/auth_redirect")(auth_controller.auth_redirect)
 app.get("/logout")(auth_controller.logout)
 app.post("/update_profile")(profile_controller.update_profile)
+app.get("/delete_story")(delete_story_controller.delete_story)
 
 # Story generation
 app.get("/prologue")(prologue_views.prologue_view)

@@ -5,20 +5,23 @@ import json
 
 
 def profile_view(session, req, res):
+    print("\n>>> VIEW: profile_view")
     user_id = session["user_id"]
     user_data = db.t.users.get(user_id)
 
     if not user_data.profile:
-        user_data.profile = json.dumps(PROFILE)
+        print(f"==>> profile is None. Inserting default profile")
+        user_data.profile = json.dumps(PROFILE, ensure_ascii=True, indent=1)
         db.t.users.update(
             pk_values=user_id,
-            updates={"profile": json.dumps(PROFILE)},
+            updates={"profile": user_data.profile},
         )
     if not user_data.big5:
-        user_data.big5 = json.dumps(BIG5)
+        print(f"==>> big5 is None. Inserting default big5")
+        user_data.big5 = json.dumps(BIG5, ensure_ascii=True, indent=1)
         db.t.users.update(
             pk_values=user_id,
-            updates={"big5": json.dumps(BIG5)},
+            updates={"big5": user_data.big5},
         )
 
     profile_data = json.loads(user_data.profile)

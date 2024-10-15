@@ -28,6 +28,9 @@ def auth_redirect(code: str, request, session):
             email="",
             profile="",
             big5="",
+            verbalized_profile="",
+            verbalized_big5="",
+            is_profile_updated=False,
         )
         print(f"===> user inserted in DB with id: {session['user_id']}")
 

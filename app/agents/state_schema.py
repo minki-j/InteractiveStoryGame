@@ -71,13 +71,15 @@ def update_story(original: List[Scene], new: List[Scene]):
 #                    STATE
 # ===========================================
 class InputState(BaseModel):
-    profile: str
-    big5: str
+    profile: str = Field(default="")
+    big5: str = Field(default="")
     genre: str
     level: LEVELS
 
 
+
 class OutputState(BaseModel):
+    title: str = Field(default="")
     prologue: str = Field(default="")
     current_scene_index: int = Field(default=0)
     story: Annotated[List[Scene], update_story] = Field(default_factory=lambda: [])

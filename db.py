@@ -19,6 +19,9 @@ if users not in db.t:
         email=str,
         profile=str,  # json string
         big5=str,  # json string
+        verbalized_profile=str,
+        verbalized_big5=str,
+        is_profile_updated=bool,
         pk="id",
     )
 
@@ -30,6 +33,7 @@ if stories not in db.t:
         title=str,
         prologue=str,
         scenes=str,
+        created_at=str,
         pk="id",
         foreign_keys=(("user_id", "users")),
         if_not_exists=True,

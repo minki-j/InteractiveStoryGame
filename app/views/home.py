@@ -32,6 +32,7 @@ def home_view(session, req, res):
         ),
         Main(cls="container", style="max-width: 800px; margin: 0 auto; padding: 20px;")(
             generate_story_form(session, req, res),
+            Div(style="height: 2rem;"),
             all_story_card_view(session, req, res),
         ),
     )

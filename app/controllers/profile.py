@@ -27,7 +27,11 @@ async def update_profile(req, session):
 
     db.t.users.update(
         pk_values=user_id,
-        updates={"profile": json.dumps(profile_data), "big5": json.dumps(big5_data)},
+        updates={
+            "profile": json.dumps(profile_data),
+            "big5": json.dumps(big5_data),
+            "is_profile_updated": True,
+        },
     )
 
     return Response("", 204)

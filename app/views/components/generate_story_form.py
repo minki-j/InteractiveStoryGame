@@ -9,7 +9,7 @@ def generate_story_form(session, req, res):
         Form(
             hx_post="init",
             hx_swap="outerHTML",
-            hx_target="main",
+            hx_target="body",
             hx_target_500="#error_msg",
             hx_indicator=".btn-loader",
             hx_replace_url="true",

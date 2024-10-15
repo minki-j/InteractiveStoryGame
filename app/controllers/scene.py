@@ -5,7 +5,7 @@ from app.views.components.error_responses import error_modal
 from app.agents.main_graph import main_graph
 from db import db
 
-async def generate_scene(req, id: str):
+async def generate_scene(session, req: Request, id: str):
     print("\n>>> CNTRL generate_scene")
 
     story_data = db.t.stories.get(id)
@@ -16,6 +16,7 @@ async def generate_scene(req, id: str):
     config = {"configurable": {"thread_id": id}}
 
     state = main_graph.get_state(config, subgraphs=True)
+
     if not state.values["is_prologue_completed"]:
         main_graph.update_state(
             config,

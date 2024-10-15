@@ -117,6 +117,26 @@ I've enjoyed the story, but have some feedback on the prologue. Please edit the 
         "messages": delete_messages + prompt.to_messages() + [response],
     }  # prompt.to_messages() contains the first and last messages that are not deleted but it doesn't matter because LangGraph will match the ids and ignore them.
 
+def generate_title(state: OverallState):
+    print("\n>>> NODE: generate_title")
+
+    chain = (
+        ChatPromptTemplate.from_template(
+            """
+Write a title of a story based on the following prologue:
+
+{prologue}
+
+---
+
+Output only the title, no other text or comments. Don't use markdown format or prefix like "Title: " or "The title is ".
+            """
+        )
+    ) | chat_model_small | StrOutputParser()
+
+    return {
+        "title": chain.invoke(state.prologue),
+    }
 
 def check_if_prologue_completed(state: OverallState):
     print("\n>>> CONDITIONAL EDGE: check_if_prologue_completed")
@@ -126,40 +146,8 @@ def check_if_prologue_completed(state: OverallState):
         return n(generate_or_edit_prologue)
 
 
-def verbalize_questionnaire_results(state: OverallState):
-    print("\n>>> NODE: verbalize_questionnaire_results")
-
-    chain = (
-        ChatPromptTemplate.from_template(
-            """
-You are a helpful assistant. Convert the following information into normal sentences without any numbered lists or bullet points.
-
-{content}
-
----
-
-Output only the converted sentences, no other text or comments.
-        """
-        )
-        | chat_model_small
-        | StrOutputParser()
-    )
-
-    verbalized_profile, verbalized_big5 = chain.batch(
-        [{"content": state.profile}, {"content": state.big5}]
-    )
-
-    return {
-        "profile": verbalized_profile,
-        "big5": verbalized_big5,
-    }
-
-
 g = StateGraph(input=OverallState, output=OutputState)
-g.add_edge(START, n(verbalize_questionnaire_results))
-
-g.add_node(verbalize_questionnaire_results)
-g.add_edge(n(verbalize_questionnaire_results), n(check_if_prologue_completed))
+g.add_edge(START, n(check_if_prologue_completed))
 
 g.add_node(n(check_if_prologue_completed), RunnablePassthrough())
 g.add_conditional_edges(
@@ -169,7 +157,10 @@ g.add_conditional_edges(
 )
 
 g.add_node(generate_or_edit_prologue)
-g.add_edge(n(generate_or_edit_prologue), "get_feedback_from_user")
+g.add_edge(n(generate_or_edit_prologue), n(generate_title))
+
+g.add_node(generate_title)
+g.add_edge(n(generate_title), "get_feedback_from_user")
 
 g.add_node("get_feedback_from_user", RunnablePassthrough())
 g.add_edge("get_feedback_from_user", n(check_if_prologue_completed))
@@ -180,8 +171,10 @@ g.add_edge(n(decision_game_graph), "check_if_story_completed")
 g.add_node("check_if_story_completed", RunnablePassthrough())
 g.add_conditional_edges(
     "check_if_story_completed",
-    lambda state: END if state.is_story_completed else n(decision_game_graph),
-    [END, n(decision_game_graph)],
+    lambda state: (
+        END if state.is_story_completed else n(check_if_prologue_completed)
+    ),
+    [END, n(check_if_prologue_completed)],
 )
 
 os.makedirs("./data/graph_checkpoints", exist_ok=True)
