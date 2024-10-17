@@ -1,7 +1,8 @@
 from fasthtml.common import *
-from fasthtml.oauth import GoogleAppClient, redir_url
+from fasthtml.oauth import GoogleAppClient
 from db import db
 import os
+from urllib.parse import urljoin
 
 
 client = GoogleAppClient(
@@ -13,8 +14,10 @@ auth_callback_path = "/auth_redirect"
 
 def auth_redirect(code: str, request, session):
     print("\n>>> CNTRL: auth_redirect")
-    redir = redir_url(request, auth_callback_path)
-    redir = "http://localhost:5001/auth_redirect"
+    protocol = request.headers.get('X-Forwarded-Proto', 'http')
+    base_url = f"{protocol}://{request.headers['host']}"
+    redir = urljoin(base_url, auth_callback_path)
+    print(f"==>> redir: {redir}")
     user_info = client.retr_info(code, redir)
     user_id = user_info[client.id_key] 
     session["user_id"] = user_id

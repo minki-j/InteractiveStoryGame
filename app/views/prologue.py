@@ -3,6 +3,7 @@ from fasthtml.common import *
 from db import db
 from app.agents.main_graph import main_graph
 
+from app.views.components.header import header_component
 
 def prologue_view(req: Request, id: str):
     print("\n>>> VIEW story_view")
@@ -13,11 +14,9 @@ def prologue_view(req: Request, id: str):
         raise Exception(f"Story data not found for story_id: {id}")
 
     return (
-        Title("Story"),
-        Main(cls="container")(
-            A(href="/", style="text-decoration: none; color: inherit;")(
-                H1("Story Sim")
-            ),
+        Title("Story Sim"),
+        header_component(),
+        Main(cls="container", style="max-width: 800px; margin: 0 auto; padding: 20px;")(
             H2(story_data.title),
             P(cls="marked")(story_data.prologue),
             Form(

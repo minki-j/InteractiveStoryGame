@@ -62,7 +62,7 @@ def generate_multiple_draft(state: OverallState) -> DecisionGameState:
                 (
                     "system",
                     """
-You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
+You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
 ---
 
 **Reader's level**: {level}
@@ -73,9 +73,14 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
 
 ---
 
-**Reader's Personality**: {big5}
-
----
+**Reader's Personality**: {big5}.
+""",
+                ),
+                ("assistant", "{prologue}{stories}"),
+                (
+                    "human",
+                    """Good job. {human_instruction}
+                 ---
 
 **Guidelines to Follow**:
 
@@ -87,14 +92,8 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
 
 4. **Length**: should be 150 words or less.
 
-5. **Level**: The vocabulary of the story should be appropriate for {level}.
-
----
-
-Let your creativity flow as you bring this character to life and conclude their journey in a way that is both satisfying and thought-provoking!""",
+5. **Level**: The vocabulary of the story should be appropriate for {level}""",
                 ),
-                ("assistant", "{prologue}{stories}"),
-                ("human", "Good job. {human_instruction}"),
             ]
         )
         | chat_model_small
@@ -219,7 +218,7 @@ def let_the_reader_decide(state: DecisionGameState) -> OverallState:
                 (
                     "system",
                     """
-You are a celebrated {genre}  writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a story that has the reader as a main character. Here are information about the reader:
+You are a celebrated {genre}  writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
 ---
 
 **Reader Profile**: {profile}
@@ -241,10 +240,7 @@ You are a celebrated {genre}  writer known for your extraordinary ability to wea
 4. **Length**: should be 150 words or less.
 
 5. **Level**: The vocabulary of the story should be appropriate for {level}.
-
----
-
-Let your creativity flow as you bring this character to life and conclude their journey in a way that is both satisfying and thought-provoking!""",
+""",
                 ),
                 (
                     "human",

@@ -30,7 +30,7 @@ def generate_or_edit_prologue(state: OverallState):
     if state.prologue == "":
         prompt_for_new_prologue = ChatPromptTemplate.from_template(
             """
-You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a fantasy story that is 300 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
+You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a {genre} story that is 300 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
 ---
 
 **Reader's level**: {level}
@@ -54,10 +54,7 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
 3. **Genre**: The story should be a {genre} story.
 
 4. **Level**: The vocabulary of the story should be appropriate for {level}.
-
----
-
-Let your creativity flow as you bring this character to life and conclude their journey in a way that is both satisfying and thought-provoking!"""
+"""
         )
         prompt = prompt_for_new_prologue.invoke(
             {

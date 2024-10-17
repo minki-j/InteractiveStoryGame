@@ -1,4 +1,5 @@
 from typing import Literal
+
 LEVELS = Literal[
     "EarlyElementary(Grades1-3/Ages6-9)",
     "UpperElementary(Grades4-6/Ages9-12)",
@@ -79,318 +80,313 @@ GENRE_OPTIONS = [
 ]
 
 
-
 PROFILE = {
-    "1":{
+    "1": {
         "question": "What is your name?",
-        "answer": "Minki Jung",
+        "answer": "",
     },
-    "2":{
-        "question": "What is your age?",
+    "2": {
+        "question": "How old are you?",
+        "answer": "",
+    },
+    "3": {
+        "question": "What pronouns do you use??",
+        "answer": "",
+    },
+    "4": {
+        "question": "Describe yourself appearance if you feel it comfortable to share",
+        "answer": "",
+    },
+    "5": {
+        "question": "Add anything that you want to include in the story. For example, you can make your pet appears in the story.",
+        "answer": "",
+    },
+}
+
+PROFILE_M = {
+    "1": {
+        "question": "What is your name?",
+        "answer": "",
+    },
+    "2": {
+        "question": "How old are you?",
         "answer": "30",
     },
-    "3":{
-        "question": "What is your gender?",
-        "answer": "Male",
+    "3": {
+        "question": "What pronouns do you use??",
+        "answer": "he/him",
     },
-    "4":{
-        "question": "What is your nationality?",
-        "answer": "Korean Canadian",
-    },
-    "5":{
-        "question": "What's your current job?",
-        "answer": "Software Engineer focusing on AI",
-    },
-    "6":{
+    "4": {
         "question": "Describe yourself appearance if you feel it comfortable to share",
         "answer": "Asian male, 173cm, 58kg, slim but muscular, tanned skin, black long curly hair, brown eyes, clean shaven, wears brown horn-rimmed glasses, average looks",
     },
-    "7":{
-        "question": "Describe your parents and your relationship with them",
-        "answer": "Both Korean still living in Korea. Father is a pediatric docter, mother used to be a bassoonist but a housewife now. They got divorced when I was 25 years old but they see each other quite often.",
-    },    
-    "8":{
-        "question": "Tell me about your closest friends or partner that you want to include in the story",
-        "answer": "Married with no kids",
+    "5": {
+        "question": "Add anything that you want to include in the story. For example, you can add your dog. ",
+        "answer": "Bachelor's degree",
     },
 }
 
 ANSWER_OPTIONS = [
-    "strongly disagree", #0
-    "disagree", #1
-    "neutral", #2
-    "agree", #3
-    "strongly agree", #4
+    "strongly disagree",  # 0
+    "disagree",  # 1
+    "neutral",  # 2
+    "agree",  # 3
+    "strongly agree",  # 4
 ]
+
 
 BIG5 = {
     "1": {
-        "question": "I accept people the way they are.",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[3],
+        "question": "My moods change quickly.",
+        "current": "",
+        "goal": "",
     },
     "2": {
-        "question": "I believe in the importance of art.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[3],
+        "question": "I often prioritize taking care of others over myself.",
+        "current": "",
+        "goal": "",
     },
     "3": {
+        "question": "I have a very active imagination.",
+        "current": "",
+        "goal": "",
+    },
+    "4": {
+        "question": "I feel at ease when I'm around other people.",
+        "current": "",
+        "goal": "",
+    },
+    "5": {
+        "question": "I usually finish chores promptly.",
+        "current": "",
+        "goal": "",
+    },
+    "6": {
+        "question": "I frequently worry about things that might go wrong.",
+        "current": "",
+        "goal": "",
+    },
+    "7": {
+        "question": "I sometimes start arguments just for the sake of it.",
+        "current": "",
+        "goal": "",
+    },
+    "8": {
+        "question": "I often worry that I am not good enough.",
+        "current": "",
+        "goal": "",
+    },
+    "9": {
+        "question": "There are many things I wish were different about myself.",
+        "current": "",
+        "goal": "",
+    },
+    "10": {
+        "question": "I rarely feel sad or down.",
+        "current": "",
+        "goal": "",
+    },
+    "11": {
+        "question": "I often change my plans on a whim.",
+        "current": "",
+        "goal": "",
+    },
+    "12": {
+        "question": "I tend to avoid deep or philosophical discussions.",
+        "current": "",
+        "goal": "",
+    },
+    "13": {
+        "question": "I am naturally curious and like to learn new things.",
+        "current": "",
+        "goal": "",
+    },
+    "14": {
+        "question": "I tend to be quiet and enjoy reflecting on my thoughts.",
+        "current": "",
+        "goal": "",
+    },
+    "15": {
+        "question": "I generally try to get along with people.",
+        "current": "",
+        "goal": "",
+    },
+    "16": {
+        "question": "I usually make the most of my time.",
+        "current": "",
+        "goal": "",
+    },
+    "17": {
+        "question": "I'm interested in understanding the deeper meaning of things.",
+        "current": "",
+        "goal": "",
+    },
+    "18": {
+        "question": "I prefer not to take on too much responsibility.",
+        "current": "",
+        "goal": "",
+    },
+    "19": {
+        "question": "I sometimes feel superior to others.",
+        "current": "",
+        "goal": "",
+    },
+    "20": {
+        "question": "I find it easy to make new friends.",
+        "current": "",
+        "goal": "",
+    },
+    "21": {
+        "question": "I like to plan things out and follow through with my plans.",
+        "current": "",
+        "goal": "",
+    },
+    "22": {
+        "question": "I'm not particularly interested in abstract or theoretical ideas.",
+        "current": "",
+        "goal": "",
+    },
+    "23": {
+        "question": "I sometimes criticize others.",
+        "current": "",
+        "goal": "",
+    },
+    "24": {
+        "question": "I usually keep to myself and don't talk much.",
+        "current": "",
+        "goal": "",
+    },
+    "25": {
+        "question": "Being on time is very important to me.",
+        "current": "",
+        "goal": "",
+    },
+}
+
+
+BIG5_M = {
+    "1": {
         "question": "My moods change easily.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[1],
     },
-    "4": {
+    "2": {
         "question": "I take care of other people before taking care of myself.",
         "current": ANSWER_OPTIONS[0],
         "goal": ANSWER_OPTIONS[3],
     },
-    "5": {
-        "question": "I am always prepared.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "6": {
+    "3": {
         "question": "I have a vivid imagination.",
         "current": ANSWER_OPTIONS[4],
         "goal": ANSWER_OPTIONS[4],
     },
-    "7": {
+    "4": {
         "question": "I feel comfortable around people.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[4],
     },
-    "8": {
-        "question": "I am the life of the party.",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[3],
-    },
-    "9": {
-        "question": "I treat everyone with kindness and sympathy.",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "10": {
+    "5": {
         "question": "I get chores done right away.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[3],
     },
-    "11": {
-        "question": "I have a kind word for everyone.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[3],
-    },
-    "12": {
-        "question": "I am skilled in handling social situations.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "13": {
+    "6": {
         "question": "I often feel anxious about what could go wrong.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[1],
     },
-    "14": {
+    "7": {
         "question": "I start arguments just for the fun of it.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[3],
     },
-    "15": {
+    "8": {
         "question": "I often worry that I am not good enough.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[1],
     },
-    "16": {
-        "question": "I find it difficult to get to work.",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[0],
-    },
-    "17": {
-        "question": "I stay in the background.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[1],
-    },
-    "18": {
+    "9": {
         "question": "There are many things that I do not like about myself.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[1],
     },
-    "19": {
-        "question": "I seldom feel blue.",
+    "10": {
+        "question": "I rarely feel blue.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[3],
     },
-    "20": {
-        "question": "I stop what I am doing to help other people.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[3],
-    },
-    "21": {
+    "11": {
         "question": "I change my plans frequently.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[3],
     },
-    "22": {
-        "question": "I am often troubled by negative thoughts.",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[1],
-    },
-    "23": {
-        "question": "I feel comfortable with myself.",
-        "current": ANSWER_OPTIONS[4],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "24": {
+    "12": {
         "question": "I avoid philosophical discussions.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[1],
     },
-    "25": {
-        "question": "I am Original",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "26": {
-        "question": "I am Systematic",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "27": {
-        "question": "I am Shy",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[0],
-    },
-    "28": {
-        "question": "I am Soft-Hearted",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[2],
-    },
-    "29": {
-        "question": "I am Tense",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[2],
-    },
-    "30": {
-        "question": "I am Inquisitive",
+    "13": {
+        "question": "I am inquisitive",
         "current": ANSWER_OPTIONS[4],
         "goal": ANSWER_OPTIONS[4],
     },
-    "31": {
-        "question": "I am Reserved",
+    "14": {
+        "question": "I am reserved",
         "current": ANSWER_OPTIONS[2],
         "goal": ANSWER_OPTIONS[3],
     },
-    "32": {
-        "question": "I am Agreeable",
+    "15": {
+        "question": "I am agreeable",
         "current": ANSWER_OPTIONS[2],
         "goal": ANSWER_OPTIONS[1],
     },
-    "33": {
-        "question": "I am Nervous",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[2],
-    },
-    "34": {
-        "question": "I am Creative",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "35": {
-        "question": "I am Self-Disciplined",
-        "current": ANSWER_OPTIONS[3],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "36": {
-        "question": "I am Outgoing",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[3],
-    },
-    "37": {
-        "question": "I am Moody",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[1],
-    },
-    "38": {
-        "question": "I am Imaginative",
-        "current": ANSWER_OPTIONS[4],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "39": {
-        "question": "I am Organized",
-        "current": ANSWER_OPTIONS[4],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "40": {
-        "question": "I am Talkative",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[2],
-    },
-    "41": {
-        "question": "I am Humble",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[1],
-    },
-    "42": {
-        "question": "I am Pessimistic",
-        "current": ANSWER_OPTIONS[1],
-        "goal": ANSWER_OPTIONS[1],
-    },
-    "43": {
-        "question": "I have a lot to say.",
-        "current": ANSWER_OPTIONS[2],
-        "goal": ANSWER_OPTIONS[2],
-    },
-    "44": {
-        "question": "I enjoy going to art museums.",
-        "current": ANSWER_OPTIONS[4],
-        "goal": ANSWER_OPTIONS[4],
-    },
-    "45": {
+    "16": {
         "question": "I always make good use of my time.",
         "current": ANSWER_OPTIONS[2],
         "goal": ANSWER_OPTIONS[4],
     },
-    "46": {
+    "17": {
         "question": "I am interested in the meaning of things.",
         "current": ANSWER_OPTIONS[4],
         "goal": ANSWER_OPTIONS[4],
     },
-    "47": {
+    "18": {
         "question": "I avoid taking on a lot of responsibility.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[1],
     },
-    "48": {
+    "19": {
         "question": "I feel I am better than other people.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[3],
     },
-    "49": {
+    "20": {
         "question": "I make friends easily.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[2],
     },
-    "50": {
+    "21": {
         "question": "I make plans and stick to them.",
         "current": ANSWER_OPTIONS[2],
         "goal": ANSWER_OPTIONS[2],
     },
-    "51": {
+    "22": {
         "question": "I am not interested in abstract ideas.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[1],
     },
-    "52": {
+    "23": {
         "question": "I criticize other people.",
         "current": ANSWER_OPTIONS[3],
         "goal": ANSWER_OPTIONS[3],
     },
-    "53": {
+    "24": {
         "question": "I don't talk a lot.",
         "current": ANSWER_OPTIONS[2],
         "goal": ANSWER_OPTIONS[2],
     },
-    "54": {
-        "question": "It’s important to me that people are on time.",
+    "25": {
+        "question": "It's important to me that people are on time.",
         "current": ANSWER_OPTIONS[1],
         "goal": ANSWER_OPTIONS[2],
     },

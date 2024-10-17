@@ -28,7 +28,7 @@ def all_story_card_view(session, req, res):
                 *[
                     Div(style="display: flex; flex-direction: column;")(
                         A(
-                            href=f"/story?id={story["id"]}",
+                            href=f"/story?id={story['id']}",
                             cls="card story-card",
                             style="""
                             display: block;
@@ -43,18 +43,13 @@ def all_story_card_view(session, req, res):
                         )(
                             Article(style="margin-bottom: 0;")(
                                 Header(H3(story["title"])),
-                                P(f"{" ".join(story['prologue'].split(' ')[:30])}..."),
+                                P(" ".join(story['prologue'].split(' ')[:30]) + "..."),
                                 P(
                                     f"scenes: {len(json.loads(story['scenes'])) if story['scenes'] else 0}"
                                 ),
                             ),
                         ),
                         Button(
-                            cls="delete-button",
-                            style="""
-                                cursor: pointer;
-                                font-size: 0.5rem;
-                            """,
                             hx_get=f"/delete_story?id={story['id']}",
                             hx_confirm="Are you sure you want to delete this story?",
                         )("Delete"),

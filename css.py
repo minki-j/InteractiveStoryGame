@@ -11,7 +11,6 @@ main_css ="""
 }
 .btn-loader {
     position: relative;
-    color: inherit;
     pointer-events: auto;
     opacity: 1;
 }

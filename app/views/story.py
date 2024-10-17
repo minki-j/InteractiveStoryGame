@@ -4,7 +4,7 @@ from fasthtml.common import *
 
 from db import db, Scene
 
-
+from app.views.components.header import header_component
 def story_view(req, res, id: str):
     print("\n>>> VIEW story_view")
 
@@ -12,22 +12,19 @@ def story_view(req, res, id: str):
 
     if not story_data:
         raise Exception(f"Story data not found for story_id: {id}")
-    
+
     if story_data.scenes is None:
         print("===> No scenes found, redirecting to prologue")
         return RedirectResponse("/prologue?id=" + id)
-    
-    scenes = json.loads(story_data.scenes) 
+
+    scenes = json.loads(story_data.scenes)
     previous_scene = Scene(**scenes[-2]) if len(scenes) > 1 else None
     current_scene = Scene(**scenes[-1])
 
     return (
-        Title("Story"),
-        Main(cls="container")(
-            A(href="/", style="text-decoration: none; color: inherit;")(
-                H1("Story Sim")
-            ),
-            # Updated Details element with shadow and hover animation
+        Title("Story Sim"),
+        header_component(),
+        Main(cls="container", style="max-width: 800px; margin: 0 auto; padding: 20px;")(
             Details(
                 style="""
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
