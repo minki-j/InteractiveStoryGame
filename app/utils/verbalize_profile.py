@@ -3,7 +3,7 @@ import json
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from app.agents.llm_models import chat_model_small
+from app.agents.llm_models import get_chat_model
 
 from db import db
 
@@ -56,7 +56,7 @@ Now, it's your turn.
 Output only the converted sentences, no other text or comments.
             """
             )
-            | chat_model_small
+            | get_chat_model(temp=0.8)
             | StrOutputParser()
         )
 

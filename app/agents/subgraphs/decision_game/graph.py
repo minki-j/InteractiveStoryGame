@@ -13,7 +13,7 @@ from app.agents.state_schema import OverallState, OutputState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import Annotated, List
-from app.agents.llm_models import chat_model_small, chat_model
+from app.agents.llm_models import get_chat_model
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, RemoveMessage
 from langchain_core.runnables import RunnableParallel
@@ -63,6 +63,7 @@ def generate_multiple_draft(state: OverallState) -> DecisionGameState:
                     "system",
                     """
 You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
+
 ---
 
 **Reader's level**: {level}
@@ -73,14 +74,14 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
 
 ---
 
-**Reader's Personality**: {big5}.
-""",
+**Reader's Personality**: {big5}""",
                 ),
-                ("assistant", "{prologue}{stories}"),
                 (
                     "human",
-                    """Good job. {human_instruction}
-                 ---
+                    """
+{human_instruction}
+
+---
 
 **Guidelines to Follow**:
 
@@ -90,13 +91,21 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
 
 3. **Genre**: should be {genre}.
 
-4. **Length**: should be 150 words or less.
+4. **Length**: should be 100 words or less.
 
-5. **Level**: The vocabulary of the story should be appropriate for {level}""",
+5. **Level**: The vocabulary of the story should be appropriate for {level}
+
+---
+
+This is the story you've written so far:
+
+**prologue**: {prologue}
+
+**story**: {stories}""",
                 ),
             ]
         )
-        | chat_model_small
+        | get_chat_model()
     )
 
     map_chain = RunnableParallel(**{f"gen{i+1}": chain for i in range(num_of_draft)})
@@ -105,7 +114,7 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
         {
             "profile": state.profile,
             "big5": state.big5,
-            "genre": state.genre,
+            "genre": state.genre.replace("_", " "),
             "prologue": state.prologue,
             "level": state.level,
             "stories": (
@@ -114,9 +123,9 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
                 else ""
             ),
             "human_instruction": (
-                "Continue the story from the last scene, maintaining the same tone and pacing. Focus on character emotions, actions, and any unresolved plot points. The story should naturally build on what has already happened. Keep the generation 150 words or less."
+                "Continue the story from the last scene, maintaining the same tone and pacing. Focus on character emotions, actions, and any unresolved plot points. The story should naturally build on what has already happened. Keep the generation short. It should be 100 words or less."
                 if len(state.story) > 0
-                else "Start the first scene that comes after the prologue. Keep the generation 150 words or less."
+                else "Start the first scene that comes after the prologue. Keep the generation short. It should be 100 words or less."
             ),
         }
     )
@@ -125,7 +134,7 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
         "drafts": [results[f"gen{i+1}"].content for i in range(num_of_draft)],
         "profile": state.profile,
         "big5": state.big5,
-        "genre": state.genre,
+        "genre": state.genre.replace("_", " "),
         "level": state.level,
     }
 
@@ -174,7 +183,7 @@ Follow the following instructions to convert the scene into an interactive scene
 1. Identify a decision point in the scene. This can be either a reaction or a behavior. If there are multiple decision points, choose the most important one. If there is no decision point, you could create one.
 2. Amend the scene so that it ends with a decision point and the reader can make a choice.
 3. Generate five possible choices for the character.
-4. The length of the amended scene should be 150 words or less.
+4. The length of the amended scene should be 100 words or less.
 """,
                     ),
                     (
@@ -184,7 +193,7 @@ Follow the following instructions to convert the scene into an interactive scene
                 ]
             )
         )
-        | chat_model.with_structured_output(InteractiveScene)
+        | get_chat_model(size="large").with_structured_output(InteractiveScene)
     )
 
     interactive_scene = chain.invoke(
@@ -219,6 +228,7 @@ def let_the_reader_decide(state: DecisionGameState) -> OverallState:
                     "system",
                     """
 You are a celebrated {genre}  writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
+
 ---
 
 **Reader Profile**: {profile}
@@ -237,7 +247,7 @@ You are a celebrated {genre}  writer known for your extraordinary ability to wea
 
 3. **Genre**: The story should be a {genre} story.
 
-4. **Length**: should be 150 words or less.
+4. **Length**: should be 100 words or less.
 
 5. **Level**: The vocabulary of the story should be appropriate for {level}.
 """,
@@ -259,13 +269,13 @@ Choice the reader made: {user_choice}
 
 **Important Rules**
 1. Don't repeat the scene and just continue the story.
-2. Keep the generation 150 words or less.
+2. Keep the generation short and concise. It should be 100 words or less.
 3. The vocabulary of the story should be appropriate for {level}.
 """,
                 ),
             ]
         )
-        | chat_model_small
+        | get_chat_model()
         | StrOutputParser()
     )
 
@@ -273,7 +283,7 @@ Choice the reader made: {user_choice}
         {
             "profile": state.profile,
             "big5": state.big5,
-            "genre": state.genre,
+            "genre": state.genre.replace("_", " "),
             "level": state.level,
             "interactive_scene": state.story[-1].question,
             "user_choice": state.story[-1].choices[state.user_choice].title,

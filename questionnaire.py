@@ -137,7 +137,7 @@ ANSWER_OPTIONS = [
 
 BIG5 = {
     "1": {
-        "question": "My moods change quickly.",
+        "question": "I sometimes feel anxious when I have to do something that I haven't done before.",
         "current": "",
         "goal": "",
     },
@@ -152,12 +152,12 @@ BIG5 = {
         "goal": "",
     },
     "4": {
-        "question": "I feel at ease when I'm around other people.",
+        "question": "I am socially comfortable around people.",
         "current": "",
         "goal": "",
     },
     "5": {
-        "question": "I usually finish chores promptly.",
+        "question": "I usually finish chores right away.",
         "current": "",
         "goal": "",
     },
@@ -167,7 +167,7 @@ BIG5 = {
         "goal": "",
     },
     "7": {
-        "question": "I sometimes start arguments just for the sake of it.",
+        "question": "I enjoy engaging in intellectual debates and discussions.",
         "current": "",
         "goal": "",
     },
@@ -182,7 +182,7 @@ BIG5 = {
         "goal": "",
     },
     "10": {
-        "question": "I rarely feel sad or down.",
+        "question": "I sometimes feel sad or down.",
         "current": "",
         "goal": "",
     },
@@ -192,72 +192,27 @@ BIG5 = {
         "goal": "",
     },
     "12": {
-        "question": "I tend to avoid deep or philosophical discussions.",
-        "current": "",
-        "goal": "",
-    },
-    "13": {
         "question": "I am naturally curious and like to learn new things.",
         "current": "",
         "goal": "",
     },
-    "14": {
-        "question": "I tend to be quiet and enjoy reflecting on my thoughts.",
-        "current": "",
-        "goal": "",
-    },
-    "15": {
-        "question": "I generally try to get along with people.",
-        "current": "",
-        "goal": "",
-    },
-    "16": {
-        "question": "I usually make the most of my time.",
-        "current": "",
-        "goal": "",
-    },
-    "17": {
-        "question": "I'm interested in understanding the deeper meaning of things.",
-        "current": "",
-        "goal": "",
-    },
-    "18": {
+    "13": {
         "question": "I prefer not to take on too much responsibility.",
         "current": "",
         "goal": "",
     },
-    "19": {
-        "question": "I sometimes feel superior to others.",
+    "14": {
+        "question": "I often feel more capable or important than others.",
         "current": "",
         "goal": "",
     },
-    "20": {
-        "question": "I find it easy to make new friends.",
+    "15": {
+        "question": "I prefer to plan things out in advance rather than act spontaneously.",
         "current": "",
         "goal": "",
     },
-    "21": {
-        "question": "I like to plan things out and follow through with my plans.",
-        "current": "",
-        "goal": "",
-    },
-    "22": {
-        "question": "I'm not particularly interested in abstract or theoretical ideas.",
-        "current": "",
-        "goal": "",
-    },
-    "23": {
-        "question": "I sometimes criticize others.",
-        "current": "",
-        "goal": "",
-    },
-    "24": {
-        "question": "I usually keep to myself and don't talk much.",
-        "current": "",
-        "goal": "",
-    },
-    "25": {
-        "question": "Being on time is very important to me.",
+    "16": {
+        "question": "When I meet friends, I usually talk more than others.",
         "current": "",
         "goal": "",
     },

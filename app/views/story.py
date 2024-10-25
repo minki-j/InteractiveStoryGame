@@ -70,7 +70,7 @@ def story_view(req, res, id: str):
             Form(
                 hx_post=f"/scene?id={id}",
                 hx_swap="outerHTML",
-                hx_target="main",
+                hx_target="body",
                 hx_indicator=".btn-loader",
             )(
                 Div(
@@ -88,11 +88,11 @@ def story_view(req, res, id: str):
                     ]
                 ),
             ),
-            Button(
-                hx_get=f"/delete_story?id={id}",
-                hx_confirm="Are you sure you want to delete this story?",
-                style="margin-top: 10px; color: var(--pico-h1-color)",
-                cls="btn-loader secondary",
-            )("Delete"),
+            # Button(
+            #     hx_get=f"/delete_story?id={id}",
+            #     hx_confirm="Are you sure you want to delete this story?",
+            #     style="margin-top: 10px; color: var(--pico-h1-color)",
+            #     cls="btn-loader secondary",
+            # )("Delete"),
         ),
     )

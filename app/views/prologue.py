@@ -24,7 +24,7 @@ def prologue_view(req: Request, id: str):
                 hx_swap="outerHTML",
                 hx_target="body",
                 hx_indicator=".btn-loader",
-                hx_replace_url="true",
+                hx_push_url="true",
             )(
                 Textarea(
                     name="feedback",
@@ -40,8 +40,9 @@ def prologue_view(req: Request, id: str):
             ),
             Button(
                 hx_post=f"/scene?id={id}",
+                hx_target="body",
                 hx_swap="outerHTML",
-                hx_target="main",
+                hx_push_url="true",
                 cls="btn-loader outline",
                 style="margin-top: 0; width: 100%;",
             )("Accept Prologue & Continue Story"),
