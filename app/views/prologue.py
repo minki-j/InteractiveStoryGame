@@ -22,7 +22,7 @@ def prologue_view(req: Request, id: str):
             Form(
                 hx_post=f"/prologue?id={id}",
                 hx_swap="outerHTML",
-                hx_target="main",
+                hx_target="body",
                 hx_indicator=".btn-loader",
                 hx_replace_url="true",
             )(

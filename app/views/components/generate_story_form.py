@@ -5,7 +5,7 @@ from questionnaire import GENRE_OPTIONS, LEVEL_OPTIONS
 
 def generate_story_form(session, req, res):
     return (
-        H2("What kind of story do you want to read?"),
+        H2(style="font-size: 1.5rem; font-weight: 500;")("What kind of story do you want to play?"),
         Form(
             hx_post="init",
             hx_swap="outerHTML",

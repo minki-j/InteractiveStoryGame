@@ -15,25 +15,24 @@ def login_view(request):
     protocol = request.headers.get("X-Forwarded-Proto", "http")
     base_url = f"{protocol}://{request.headers['host']}"
     redir = urljoin(base_url, auth_callback_path)
-    print(f"==>> redir: {redir}")
-    login_link = client.login_link(redir)
+    login_link = (
+        client.login_link(redir) + "&prompt=select_account"
+    )  # Everytime ask to select account
 
     return (
         Title("Story Sim"),
-        Main(cls="container")(
-            P("Please login to continue."),
+        Main(
+            cls="container",
+            style="display: flex; flex-direction: column; gap: 30px; align-items: center; justify-content: center; height: 100vh;",
+        )(
+            H1("Please login to continue"),
             A(
                 Button(
-                    Img(
-                        src="/static/google_logo.png",
-                        alt="Google logo",
-                        style="width: 18px; height: 18px; margin-right: 8px;",
-                    ),
                     "Sign in with Google",
                     style="display: flex; align-items: center; justify-content: center;",
                 ),
                 href=login_link,
-                style="display: inline-block; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-family: Arial, sans-serif; ",
+                style="display: inline-block; border-radius: 4px; text-decoration: none; font-family: Arial, sans-serif; margin-bottom: 100px; ",
             ),
         ),
     )

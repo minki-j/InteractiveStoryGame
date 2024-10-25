@@ -10,7 +10,7 @@ def header_component():
             A(href="/", style="text-decoration: none;")(
                 H1(
                     "Story Sim",
-                    style="font-weight: 900; font-size: 2.8rem; color: #4A4A4A; margin: 0; text-transform: uppercase; letter-spacing: 1px;",
+                    style="font-weight: 900; font-size: 2.8rem; color: var(--pico-primary-color); margin: 0; text-transform: uppercase; letter-spacing: 3px;",
                 )
             ),
             Div(cls="profile-section")(

@@ -1,3 +1,5 @@
+import json
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -6,7 +8,7 @@ from app.agents.llm_models import chat_model_small
 from db import db
 
 
-def verbalize_profile(user_id, profile, big5):
+def verbalize_profile(user_id, profile_json, big5_json):
     print("\n>>> verbalize_profile")
 
     user = db.t.users.get(user_id)
@@ -23,7 +25,7 @@ def verbalize_profile(user_id, profile, big5):
         chain = (
             ChatPromptTemplate.from_template(
                 """
-You are a helpful assistant. Convert the following information into normal sentences without any numbered lists or bullet points.
+Convert the following information into normal sentences without any numbered lists or bullet points.
 
 ---
 
@@ -32,9 +34,9 @@ Input:
 {{"1": {{"question": "My moods change quickly.", "current": "agree", "goal": "disagree"}}, "2": {{"question": "I often prioritize taking care of others over myself.", "current": "strongly disagree", "goal": "neutral"}}, "3": {{"question": "I am a morning person.", "current": "strongly disagree", "goal": "strongly agree"}}}}
 
 Output:
-My moods change quickly but not too much, and I want to be a little bit more consistent. 
-I don't prioritize taking care of others over myself almost all the time, but I want to be more balanced.
-I am not a morning person at all, but I want to be 100% morning person.
+My moods tend to change quickly, and I aspire to achieve a bit more consistency in my emotions.
+While I don't prioritize taking care of others over myself most of the time, I aim to find a more balanced approach.
+I am definitely not a morning person at all, but I strongly aspire to be one.
 
 Examples 2
 Input:
@@ -58,10 +60,20 @@ Output only the converted sentences, no other text or comments.
             | StrOutputParser()
         )
 
+        filtered_profile = {}
+        for key, value in json.loads(profile_json).items():
+            if value["answer"] != "":
+                filtered_profile[key] = value
+
+        filtered_big5 = {}
+        for key, value in json.loads(big5_json).items():
+            if value["current"] != "" or value["goal"] != "":
+                filtered_big5[key] = value
+
         verbalized_profile, verbalized_big5 = chain.batch(
             [
-                {"content": profile},
-                {"content": big5},
+                {"content": json.dumps(filtered_profile)},
+                {"content": json.dumps(filtered_big5)},
             ]
         )
         db.t.users.update(
