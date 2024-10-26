@@ -1,6 +1,6 @@
 from fasthtml.common import *
 
-main_css ="""
+main_css = """
 .main-page-loader{
     display:none;
 }
@@ -26,7 +26,7 @@ main_css ="""
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #000000;
+    color: var(--pico-primary);
     font-size: 14px;
     animation: pulse 2s ease-in-out infinite !important;
 }

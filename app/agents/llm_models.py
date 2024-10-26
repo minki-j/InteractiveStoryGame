@@ -38,7 +38,3 @@ def get_chat_model(temp: float = LLM_TEMPERATURE, size: str = "small"):
         raise ValueError("Invalid model name")
 
     return main_model.with_fallbacks([fallback_model])
-
-# Usage example:
-# chat_model = get_chat_model(temp="default", size="large")
-# chat_model_small = get_chat_model(temp="small", size="small")
