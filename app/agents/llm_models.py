@@ -25,7 +25,7 @@ def get_chat_model(temp: float = LLM_TEMPERATURE, size: str = "small"):
         )
     elif "gpt" in DEFAULT_MODEL:
         main_model = ChatOpenAI(
-            model=DEFAULT_MODEL if size == "large" else "gpt-4-turbo-preview",
+            model=DEFAULT_MODEL if size == "large" else "gpt-4o-mini",
             api_key=OPENAI_API_KEY,
             temperature=temp,
         )

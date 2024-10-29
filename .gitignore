@@ -5,6 +5,7 @@
 .sesskey
 __pycache__/
 .vscode/
+.conda/
 
 cache/
 data/

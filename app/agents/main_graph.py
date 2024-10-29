@@ -15,7 +15,7 @@ from app.agents.llm_models import get_chat_model
 from app.agents.state_schema import OverallState, OutputState
 from app.agents.subgraphs.decision_game.graph import decision_game_graph
 from app.agents.subgraphs.writer_agent.graph import writer_agent_graph
-from app.agents.prompts import PROTAGONIST_INFO, GUIDELINES
+from app.agents.prompts import STORY_INSTRUCTION, PROTAGONIST_INFO, GUIDELINES, PROLOGUE_EXTRA_GUIDELINES
 
 def generate_or_edit_prologue(state: OverallState):
     print("\n>>> NODE: generate_or_edit_prologue")
@@ -24,10 +24,10 @@ def generate_or_edit_prologue(state: OverallState):
 
     if state.prologue == "":
         prompt_for_new_prologue = ChatPromptTemplate.from_template(
-            """You are a celebrated {genre} writer. Write a prologue for a story using the following information:
-            """
+            STORY_INSTRUCTION.replace("story", "prologue")
             + PROTAGONIST_INFO
             + GUIDELINES
+            + PROLOGUE_EXTRA_GUIDELINES
         )
         prompt = prompt_for_new_prologue.invoke(
             {
@@ -76,7 +76,7 @@ Feedback: {feedback}""",
             },
         )
 
-    response = get_chat_model().invoke(prompt)
+    response = get_chat_model(size="large").invoke(prompt)
 
     parser = StrOutputParser()
 

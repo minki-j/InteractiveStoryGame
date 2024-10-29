@@ -23,13 +23,16 @@ async def generate_scene(session, req: Request, id: str):
             {"is_prologue_completed": True},
         )
     else:
+        print(req)
         form_data = await req.form()
-        user_choice = form_data.get("chosen_option_index")
+        print(f"==>> form_data: {form_data}")
+        user_choice = form_data.get("chosen_option_index", "-1")
         subgraph_config = state.tasks[0].state.config
         main_graph.update_state(
             subgraph_config,
             {
                 "user_choice": int(user_choice),
+                "custom_user_choice": form_data.get("custom_user_choice", None),
             },
         )
 

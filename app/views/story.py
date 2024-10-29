@@ -68,6 +68,7 @@ def story_view(req, res, id: str):
             P(cls="marked")(previous_scene.completed_scene) if previous_scene else None,
             P(cls="marked")(current_scene.question),
             Form(
+                id="choice-form",
                 hx_post=f"/scene?id={id}",
                 hx_swap="outerHTML",
                 hx_target="body",
@@ -85,7 +86,29 @@ def story_view(req, res, id: str):
                             value=str(i),
                         )(choice.title)
                         for i, choice in enumerate(current_scene.choices)
-                    ]
+                    ],
+                    Input(
+                        type="text",
+                        name="custom_user_choice",
+                        placeholder="Type your own choice here...",
+                        autocomplete="off",
+                        style="""
+                            flex-grow: 1;
+                            margin-bottom: 0.5rem;
+                            padding: 10px;
+                            border: 1px solid #ccc;
+                            border-radius: 4px;
+                            text-align: center;
+                            cursor: text;
+                        """,
+                        onkeypress="if(event.key === 'Enter') { event.preventDefault(); htmx.trigger('#choice-form', 'submit'); this.disabled = true;}",
+                        onfocus="document.getElementById('submit-message').style.display = 'block';",
+                        onblur="document.getElementById('submit-message').style.display = 'none';",
+                    ),
+                    P(
+                        id="submit-message",
+                        style="display: none; color: gray; font-size: 0.9em; text-align: center;",
+                    )("Press Enter (↵) to submit"),
                 ),
             ),
             # Button(
