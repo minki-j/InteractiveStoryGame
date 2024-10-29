@@ -5,8 +5,10 @@
 .sesskey
 __pycache__/
 .vscode/
+.conda/
 
 cache/
 data/
 testing/
 sketchpad.ipynb
+fine_tuning/
