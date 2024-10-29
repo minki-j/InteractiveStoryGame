@@ -92,6 +92,7 @@ class OverallState(InputState, OutputState):
     prologue_feedback: str = ""
     is_prologue_completed: bool = False
     is_story_completed: bool = False
+    use_agent: bool = False
 
     # Short Term Memory
     # MAY be UPDATED after each loop

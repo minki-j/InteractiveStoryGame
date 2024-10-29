@@ -1,24 +1,16 @@
-import os
+from typing import List
 from varname import nameof as n
-
-import sqlite3
+from pydantic import BaseModel, Field
 
 from langgraph.graph import START, END, StateGraph
-from langgraph.checkpoint.sqlite import SqliteSaver
-
-from langchain_core.runnables import RunnablePassthrough
-
-from app.agents.state_schema import OverallState, OutputState
-
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
-from typing import Annotated, List
-from app.agents.llm_models import get_chat_model
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import HumanMessage, RemoveMessage
 from langchain_core.runnables import RunnableParallel
 
+from app.agents.llm_models import get_chat_model
+from app.agents.state_schema import OverallState
 from app.agents.state_schema import Scene, Choice
+from app.agents.prompts import PROTAGONIST_INFO, GUIDELINES
 
 
 class InteractiveSceneChoice(BaseModel):
@@ -45,6 +37,7 @@ class DecisionGameState(BaseModel):
         default_factory=lambda: []
     )  #! there can be the same state variables in different states. when this variable name is returned, both state will be updated. This is confusing, and need to be fixed.
     user_choice: int = Field(default=None)
+    custom_user_choice: str = Field(default=None)
     scene: Scene = Field(default=None)
     profile: str = Field(default=None)
     big5: str = Field(default=None)
@@ -61,47 +54,27 @@ def generate_multiple_draft(state: OverallState) -> DecisionGameState:
             [
                 (
                     "system",
+                    """You are a celebrated novelist writing story about this character
                     """
-You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
-
----
-
-**Reader's level**: {level}
-
----
-
-**Reader Profile**: {profile}
-
----
-
-**Reader's Personality**: {big5}""",
+                    + PROTAGONIST_INFO,
                 ),
                 (
                     "human",
+                    """Continue the story from the last scene. Keep the generation short. It should be 100 words or less.
                     """
-{human_instruction}
-
----
-
-**Guidelines to Follow**:
-
-1. **Character Development**: Base the character's traits, motivations, and challenges on the reader's profile and personality test results. Aim for depth and nuance to evoke emotional resonance.
-
-2. **Engaging Narrative**: The prologue should be a compelling conclusion to the story, wrapping up loose ends while leaving readers with a sense of wonder or reflection. Incorporate elements of magic, adventure or personal growth relevant to the character.
-
-3. **Genre**: should be {genre}.
-
-4. **Length**: should be 100 words or less.
-
-5. **Level**: The vocabulary of the story should be appropriate for {level}
-
+                    + GUIDELINES
+                    + """
 ---
 
 This is the story you've written so far:
 
-**prologue**: {prologue}
+{prologue}
 
-**story**: {stories}""",
+{stories}
+
+---
+
+Don't repeat the story. Just continue the story. Only return the continuation of the story, no title or comments such as "Here is the continuation: " or "The continuation is ".""",
                 ),
             ]
         )
@@ -118,14 +91,9 @@ This is the story you've written so far:
             "prologue": state.prologue,
             "level": state.level,
             "stories": (
-                "\n\n" + "\n\n".join([scene.completed_scene for scene in state.story])
+                "\n\n".join([scene.completed_scene for scene in state.story])
                 if len(state.story) > 0
                 else ""
-            ),
-            "human_instruction": (
-                "Continue the story from the last scene, maintaining the same tone and pacing. Focus on character emotions, actions, and any unresolved plot points. The story should naturally build on what has already happened. Keep the generation short. It should be 100 words or less."
-                if len(state.story) > 0
-                else "Start the first scene that comes after the prologue. Keep the generation short. It should be 100 words or less."
             ),
         }
     )
@@ -182,7 +150,7 @@ Then you should return something like this:
 Follow the following instructions to convert the scene into an interactive scene:
 1. Identify a decision point in the scene. This can be either a reaction or a behavior. If there are multiple decision points, choose the most important one. If there is no decision point, you could create one.
 2. Amend the scene so that it ends with a decision point and the reader can make a choice.
-3. Generate five possible choices for the character.
+3. Generate 2-5 possible choices for the character. If there are not enough good options, just return as many as you can instead of trying to fabricate five. 
 4. The length of the amended scene should be 100 words or less.
 """,
                     ),
@@ -226,31 +194,10 @@ def let_the_reader_decide(state: DecisionGameState) -> OverallState:
             [
                 (
                     "system",
+                    """You are a celebrated novelist writing story about this character:
                     """
-You are a celebrated {genre}  writer known for your extraordinary ability to weave enchanting and immersive tales. You are currently writing a {genre} story that has the reader as a main character. Here are information about the reader:
-
----
-
-**Reader Profile**: {profile}
-
----
-
-**Reader's Personality**: {big5}
-
----
-
-**Guidelines to Follow**:
-
-1. **Character Development**: Base the character's traits, motivations, and challenges on the reader's profile and personality test results. Aim for depth and nuance to evoke emotional resonance.
-
-2. **Engaging Narrative**: The prologue should be a compelling conclusion to the story, wrapping up loose ends while leaving readers with a sense of wonder or reflection. Incorporate elements of magic, adventure or personal growth relevant to the character.
-
-3. **Genre**: The story should be a {genre} story.
-
-4. **Length**: should be 100 words or less.
-
-5. **Level**: The vocabulary of the story should be appropriate for {level}.
-""",
+                    + PROTAGONIST_INFO
+                    + GUIDELINES,
                 ),
                 (
                     "human",
@@ -275,7 +222,7 @@ Choice the reader made: {user_choice}
                 ),
             ]
         )
-        | get_chat_model()
+        | get_chat_model(size="large")
         | StrOutputParser()
     )
 
@@ -286,7 +233,11 @@ Choice the reader made: {user_choice}
             "genre": state.genre.replace("_", " "),
             "level": state.level,
             "interactive_scene": state.story[-1].question,
-            "user_choice": state.story[-1].choices[state.user_choice].title,
+            "user_choice": (
+                state.story[-1].choices[state.user_choice].title
+                if state.user_choice != -1
+                else state.custom_user_choice
+            ),
         }
     )
 

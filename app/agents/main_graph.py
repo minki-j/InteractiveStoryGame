@@ -1,26 +1,21 @@
 import os
-from varname import nameof as n
-import asyncio
-
 import sqlite3
+import asyncio
+from varname import nameof as n
 
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.sqlite import SqliteSaver
-
 from langchain_core.runnables import RunnablePassthrough
-
-from app.agents.state_schema import OverallState, OutputState
-
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
-from typing import List
-from app.agents.llm_models import get_chat_model
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, RemoveMessage
 from langchain_core.runnables import RunnableParallel
 
+from app.agents.llm_models import get_chat_model
+from app.agents.state_schema import OverallState, OutputState
 from app.agents.subgraphs.decision_game.graph import decision_game_graph
-
+from app.agents.subgraphs.writer_agent.graph import writer_agent_graph
+from app.agents.prompts import STORY_INSTRUCTION, PROTAGONIST_INFO, GUIDELINES, PROLOGUE_EXTRA_GUIDELINES
 
 def generate_or_edit_prologue(state: OverallState):
     print("\n>>> NODE: generate_or_edit_prologue")
@@ -29,37 +24,10 @@ def generate_or_edit_prologue(state: OverallState):
 
     if state.prologue == "":
         prompt_for_new_prologue = ChatPromptTemplate.from_template(
-            """
-You are a celebrated {genre} writer known for your extraordinary ability to weave enchanting and immersive tales. In this task, your goal is to craft an prologue for a {genre} story that is 100 words or less. However, there’s a unique twist: you will create the main character based on the reader's profile. While you can exercise creative freedom in developing the character, ensure they remain relatable so the reader can see themselves in this role.
-
----
-
-**Reader's level**: {level}
-
----
-
-**Reader Profile**: {profile}
-
----
-
-**Reader's Personality**: {big5}
-
----
-
-**Guidelines to Follow**:
-
-1. **Character Development**: Base the character's traits, motivations, and challenges on the reader's profile and personality test results. Aim for depth and nuance to evoke emotional resonance.
-
-2. **Engaging Narrative**: The prologue should be a compelling conclusion to the story, wrapping up loose ends while leaving readers with a sense of wonder or reflection. Incorporate elements of magic, adventure, or personal growth relevant to the character.
-
-3. **Genre**: The story should be a {genre} story.
-
-4. **Level**: The vocabulary of the story should be appropriate for {level}.
-
-5. **Word Count**: The prologue should be 100 words or less.
-
-6. **Output**: Only return the prologue, no other text or comments such as "Here is the prologue: " or "The prologue is ".
-"""
+            STORY_INSTRUCTION.replace("story", "prologue")
+            + PROTAGONIST_INFO
+            + GUIDELINES
+            + PROLOGUE_EXTRA_GUIDELINES
         )
         prompt = prompt_for_new_prologue.invoke(
             {
@@ -95,7 +63,7 @@ You are a celebrated {genre} writer known for your extraordinary ability to weav
                 (
                     "user",
                     """
-I've enjoyed the story, but have some feedback on the prologue. Please edit the prologue based on the feedback. Only return the prologue, no other text or comments such as "Here is the prologue: " or "The prologue is ".
+I've enjoyed the story, but have some feedback on the prologue. Please edit the prologue based on the feedback. Only return the edited prologue.
 
 Feedback: {feedback}""",
                 ),
@@ -108,7 +76,7 @@ Feedback: {feedback}""",
             },
         )
 
-    response = get_chat_model().invoke(prompt)
+    response = get_chat_model(size="large").invoke(prompt)
 
     parser = StrOutputParser()
 
@@ -117,12 +85,14 @@ Feedback: {feedback}""",
         "messages": delete_messages + prompt.to_messages() + [response],
     }  # prompt.to_messages() contains the first and last messages that are not deleted but it doesn't matter because LangGraph will match the ids and ignore them.
 
+
 def generate_title(state: OverallState):
     print("\n>>> NODE: generate_title")
 
     chain = (
-        ChatPromptTemplate.from_template(
-            """
+        (
+            ChatPromptTemplate.from_template(
+                """
 Write a **creative and unique** title of a story based on the following prologue:
 
 {prologue}
@@ -131,19 +101,31 @@ Write a **creative and unique** title of a story based on the following prologue
 
 Output only the title, no other text or comments. Don't use markdown format or prefix like "Title: " or "The title is ".
             """
+            )
         )
-    ) | get_chat_model(temp=1.0) | StrOutputParser()
+        | get_chat_model(temp=1.0)
+        | StrOutputParser()
+    )
 
     return {
         "title": chain.invoke(state.prologue),
     }
 
+
 def check_if_prologue_completed(state: OverallState):
     print("\n>>> CONDITIONAL EDGE: check_if_prologue_completed")
     if state.is_prologue_completed:
-        return n(decision_game_graph)
+        return n(check_if_use_agent)
     else:
         return n(generate_or_edit_prologue)
+
+
+def check_if_use_agent(state: OverallState):
+    print("\n>>> CONDITIONAL EDGE: check_if_use_agent")
+    if state.use_agent:
+        return n(writer_agent_graph)
+    else:
+        return n(decision_game_graph)
 
 
 g = StateGraph(input=OverallState, output=OutputState)
@@ -153,7 +135,7 @@ g.add_node(n(check_if_prologue_completed), RunnablePassthrough())
 g.add_conditional_edges(
     n(check_if_prologue_completed),
     check_if_prologue_completed,
-    [n(decision_game_graph), n(generate_or_edit_prologue)],
+    [n(check_if_use_agent), n(generate_or_edit_prologue)],
 )
 
 g.add_node(generate_or_edit_prologue)
@@ -165,15 +147,23 @@ g.add_edge(n(generate_title), "get_feedback_from_user")
 g.add_node("get_feedback_from_user", RunnablePassthrough())
 g.add_edge("get_feedback_from_user", n(check_if_prologue_completed))
 
+g.add_node(n(check_if_use_agent), RunnablePassthrough())
+g.add_conditional_edges(
+    n(check_if_use_agent),
+    check_if_use_agent,
+    [n(decision_game_graph), n(writer_agent_graph)],
+)
+
+g.add_node(n(writer_agent_graph), writer_agent_graph)
+g.add_edge(n(writer_agent_graph), "check_if_story_completed")
+
 g.add_node(n(decision_game_graph), decision_game_graph)
 g.add_edge(n(decision_game_graph), "check_if_story_completed")
 
 g.add_node("check_if_story_completed", RunnablePassthrough())
 g.add_conditional_edges(
     "check_if_story_completed",
-    lambda state: (
-        END if state.is_story_completed else n(check_if_prologue_completed)
-    ),
+    lambda state: (END if state.is_story_completed else n(check_if_prologue_completed)),
     [END, n(check_if_prologue_completed)],
 )
 
