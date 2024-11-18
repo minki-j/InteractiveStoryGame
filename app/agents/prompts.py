@@ -30,3 +30,7 @@ PROLOGUE_EXTRA_GUIDELINES = """
 
 8. Don't reveal everything in the prologue. Prologue should only reveals the setting and latent feelings of the story. 
 """
+
+STORY_CONTINUATION_GUIDELINES = """
+7. Don't repeat the story that you've written before. Just continue the story.
+"""

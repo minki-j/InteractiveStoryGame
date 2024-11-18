@@ -70,11 +70,7 @@ This is the story you've written so far:
 
 {prologue}
 
-{stories}
-
----
-
-Don't repeat the story. Just continue the story. Only return the continuation of the story, no title or comments such as "Here is the continuation: " or "The continuation is ".""",
+{stories}""",
                 ),
             ]
         )

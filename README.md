@@ -1,7 +1,5 @@
 # AI-Powered Interactive Story Generator
 
-<img src="logo.webp" alt="Interactive Story Generator Logo" width="200">
-
 Interactive Story Game is a personalized fantasy story generator that places you at the heart of an immersive narrative. Through a fun, MBTI-like questionnaire, the app learns your personality traits, preferences, and interests to tailor a story experience uniquely for you.
 
 ## Features
@@ -58,3 +56,7 @@ python main.py
 3. Choose your preferred genre and settings
 4. Begin your personalized story adventure
 5. Make choices to influence the narrative
+
+
+## Cognitive architecture
+<img src="app/agents/graph_diagrams/main_graph.png" width="600">
